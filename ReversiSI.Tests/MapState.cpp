@@ -12,29 +12,29 @@ namespace SI::Reversi::Tests
 		
 		TEST_METHOD(GetFieldState_HasEmptyMap_CheckReturnEmptyForAllFields)
 		{
-			MapState map;
-			for ( unsigned i = 0; i < MapState::rowsCount; i++ )
+			MapStateMemoryOptimized map;
+			for ( unsigned i = 0; i < MapStateMemoryOptimized::rowsCount; i++ )
 			{
-				for ( unsigned j = 0; j < MapState::colsCount; j++ )
-					Assert::AreEqual((int)MapState::State::Empty, (int)map.GetFieldState(i, j));
+				for ( unsigned j = 0; j < MapStateMemoryOptimized::colsCount; j++ )
+					Assert::AreEqual((int)MapStateMemoryOptimized::State::Empty, (int)map.GetFieldState(i, j));
 			}
 		}
 
 		TEST_METHOD(GetFieldState_HasMapWithFirstElements_CheckReturnEmptyForOthers)
 		{
 			char bytes[16] = { 0b10010000,0b10010000,0,0,0,0,0,0 };
-			MapState map(bytes);
-			for ( unsigned i = 1; i < MapState::rowsCount; i++ )
+			MapStateMemoryOptimized map(bytes);
+			for ( unsigned i = 1; i < MapStateMemoryOptimized::rowsCount; i++ )
 			{
-				for ( unsigned j = 1; j < MapState::colsCount; j++ )
-					Assert::AreEqual((int)MapState::State::Empty, (int)map.GetFieldState(i, j));
+				for ( unsigned j = 1; j < MapStateMemoryOptimized::colsCount; j++ )
+					Assert::AreEqual((int)MapStateMemoryOptimized::State::Empty, (int)map.GetFieldState(i, j));
 			}
 		}
 
 		TEST_METHOD(GetFieldState_HasMapWithFirstElements_CheckReturnCorrectFirsts)
 		{
 			char bytes[16] = { 0b10010000,0,0b10010000,0,0,0,0,0,0,0,0,0,0,0,0,1 };
-			MapState map(bytes);
+			MapStateMemoryOptimized map(bytes);
 			int result[5];
 			result[0]=map.GetFieldState(0, 0);
 			result[1] = map.GetFieldState(0, 1);
@@ -51,12 +51,12 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(SetFieldState_HasMapWithFirstElements_CheckReturnCorrectFirsts)
 		{
-			MapState map;
-			map.SetFieldState(0, 0,(MapState::State)2);
-			map.SetFieldState(0, 1, (MapState::State)1);
-			map.SetFieldState(1, 0, (MapState::State)2);
-			map.SetFieldState(1, 1, (MapState::State)1);
-			map.SetFieldState(7, 7, (MapState::State)1);
+			MapStateMemoryOptimized map;
+			map.SetFieldState(0, 0,(MapStateMemoryOptimized::State)2);
+			map.SetFieldState(0, 1, (MapStateMemoryOptimized::State)1);
+			map.SetFieldState(1, 0, (MapStateMemoryOptimized::State)2);
+			map.SetFieldState(1, 1, (MapStateMemoryOptimized::State)1);
+			map.SetFieldState(7, 7, (MapStateMemoryOptimized::State)1);
 
 			int result[5];
 			result[0] = map.GetFieldState(0, 0);

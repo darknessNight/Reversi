@@ -3,7 +3,7 @@
 
 namespace SI::Reversi
 {
-	class MapState
+	class MapStateMemoryOptimized
 	{
 	public:
 		static const auto rowsCount = 8u;
@@ -22,43 +22,45 @@ namespace SI::Reversi
 			Unknow
 		};
 	public:
-		explicit MapState(char bytes[bytesCount])
+		explicit MapStateMemoryOptimized(char bytes[bytesCount])
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		explicit MapState(int* bytes)
+		explicit MapStateMemoryOptimized(int* bytes)
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		MapState(const MapState& other)
+		MapStateMemoryOptimized(const MapStateMemoryOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapState(const MapState&& other)
+		MapStateMemoryOptimized(const MapStateMemoryOptimized&& other) noexcept
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapState()
+		MapStateMemoryOptimized()
 		{
 			memset(bytes, 0, bytesCount);
 		}
-		MapState& operator=(const MapState& other)
+		MapStateMemoryOptimized& operator=(const MapStateMemoryOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
+			return *this;
 		}
-		MapState& operator=(const MapState&& other)
+		MapStateMemoryOptimized& operator=(const MapStateMemoryOptimized&& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
+			return *this;
 		}
 
-		State GetFieldState(unsigned x, unsigned y)
+		State GetFieldState(unsigned x, unsigned y)const 
 		{
 			auto flatIndex=x*rowsCount + y;
 			auto byteIndex = flatIndex*bitsPerField / bitsPerByte;
 			auto inByteIndex = flatIndex*bitsPerField - byteIndex*bitsPerByte;
 			auto shift = (bitsPerByte - inByteIndex - bitsPerField);
 
-			return (State)((bytes[byteIndex] >> shift) & 0b11);
+			return static_cast<State>(bytes[byteIndex] >> shift & 0b11);
 		}
 
 		void SetFieldState(unsigned x, unsigned y, State newState)
@@ -68,10 +70,83 @@ namespace SI::Reversi
 			auto inByteIndex = flatIndex*bitsPerField - byteIndex*bitsPerByte;
 			auto shift = (bitsPerByte - inByteIndex - bitsPerField);
 
-			auto mask = (~0b11)<<shift;
-			auto value = ((int)newState) << shift;
+			auto mask = ~0b11<<shift;
+			auto value = static_cast<int>(newState) << shift;
 			bytes[byteIndex] = bytes[byteIndex] & mask;
 			bytes[byteIndex] = bytes[byteIndex] | value;
 		}
 	};
+
+
+	class MapStateProcessingOptimized
+	{
+	public:
+		static const auto rowsCount = MapStateMemoryOptimized::rowsCount;
+		static const auto colsCount = MapStateMemoryOptimized::colsCount;
+	private:
+		static const auto bytesCount = rowsCount*colsCount;
+		unsigned char bytes[bytesCount];
+	public:
+		typedef MapStateMemoryOptimized::State State;
+	public:
+		explicit MapStateProcessingOptimized(char bytes[bytesCount])
+		{
+			memcpy(this->bytes, bytes, bytesCount);
+		}
+		explicit MapStateProcessingOptimized(int* bytes)
+		{
+			memcpy(this->bytes, bytes, bytesCount);
+		}
+		MapStateProcessingOptimized(const MapStateMemoryOptimized & memoryOther)
+		{
+			for(auto i=0;i<rowsCount;i++)
+			{
+				for (auto j = 0; j<colsCount; j++)
+				{
+					SetFieldState(i, j, memoryOther.GetFieldState(i, j));
+				}
+			}
+		}
+		MapStateProcessingOptimized(const MapStateProcessingOptimized& other)
+		{
+			memcpy(this->bytes, other.bytes, bytesCount);
+		}
+		MapStateProcessingOptimized(const MapStateProcessingOptimized&& other) noexcept
+		{
+			memcpy(this->bytes, other.bytes, bytesCount);
+		}
+		MapStateProcessingOptimized()
+		{
+			memset(bytes, 0, bytesCount);
+		}
+		MapStateProcessingOptimized& operator=(const MapStateProcessingOptimized& other)
+		{
+			memcpy(this->bytes, other.bytes, bytesCount);
+			return *this;
+		}
+		MapStateProcessingOptimized& operator=(const MapStateProcessingOptimized&& other)
+		{
+			memcpy(this->bytes, other.bytes, bytesCount);
+			return *this;
+		}
+
+		State GetFieldState(unsigned x, unsigned y)const
+		{
+			auto flatIndex = x*rowsCount + y;
+
+			return static_cast<State>(bytes[flatIndex]);
+		}
+
+		void SetFieldState(unsigned x, unsigned y, State newState)
+		{
+			auto flatIndex = x*rowsCount + y;
+			bytes[flatIndex] = newState;
+		}
+	};
+
+#ifdef _MEMORY_OPTIMIZED
+	typedef MapStateMemoryOptimized MapState;
+#else
+	typedef MapStateProcessingOptimized MapState;
+#endif
 }
