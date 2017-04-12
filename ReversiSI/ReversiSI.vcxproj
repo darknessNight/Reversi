@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapState.h" />
+    <ClInclude Include="ParallelJob.h" />
     <ClInclude Include="StateGenerator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
