@@ -15,11 +15,11 @@ namespace SI::Reversi
 		unsigned char bytes[bytesCount];
 	public:
 		enum State
-		{
-			Empty,
-			Player1,
-			Player2,
-			Unknow
+		{					//in case we want mooooore optimization and fucking around with bit operations	
+			Empty,			// = 0b00
+			Player1,		// = 0b10
+			Player2,		// = 0b11
+			Unknow			// = 0b01
 		};
 	public:
 		explicit MapStateMemoryOptimized(char bytes[bytesCount])
