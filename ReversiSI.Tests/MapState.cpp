@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "CppUnitTest.h"
+#include <CppUnitTest.h>
 #include "../ReversiSI/MapState.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

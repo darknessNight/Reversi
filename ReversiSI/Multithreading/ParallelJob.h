@@ -4,52 +4,89 @@
 
 namespace darknessNight::Multithreading
 {
-	class ParallerJob
+	class ParallelJob
 	{
-		unsigned threadCount;
-		unsigned CPUThreadNumber;
+		unsigned threadNumber;
 		Semaphore semaphore;
 		std::mutex elementsMutex;
 	public:
-		ParallerJob()
-		{}
+		ParallelJob() : threadNumber(GetCPUNumberOfThreads() - 1), semaphore(threadNumber)
+		{
+		}
+
 		typedef int T;
 		//template <typename T>
-		void DoForEach(std::function<void(T&)> func, std::vector<T> elements)
+		void ForEach(std::function<void(T&)> func, std::vector<T> &elements)
+		{
+			auto it = elements.begin();
+			auto end = elements.end();
+
+			std::function<void()> task = [&]()
+			{
+				std::vector<std::shared_ptr<std::thread>> threads;
+				while (true) {
+					elementsMutex.lock();
+					T* element = nullptr;
+					if (it != end) {
+						element = &*it;
+						it++;
+					}
+					elementsMutex.unlock();
+
+					if (element == nullptr) {
+						for (auto thread : threads)
+							if (thread->joinable())
+								thread->join();
+						return;
+					}
+
+					if (semaphore.try_lock())
+					{
+						threads.push_back(std::make_shared<std::thread>([&](T* el) { func(*el);  task(); }, element));
+					}
+					else
+					{
+						func(*element);
+					}
+				}
+
+			};
+
+			task();
+		}
+	public:
+
+		//template <typename T>
+		void ForEachDetach(std::function<void(T&)> func, std::vector<T> &elements)
 		{
 
 		}
 
-		void SetCountOfThreads(unsigned newThreadCount)
-		{
-			threadCount = newThreadCount;
-		}
-
-		void SetCountOfThreadsToMax()
+		void Stop()
 		{
 
 		}
 
-		unsigned GetCountOfThreads()
+		void SetNumberOfThreads(unsigned newThreadNumber)
 		{
-
+			threadNumber = newThreadNumber;
+			semaphore.ChangeAccessLimit(threadNumber);
 		}
 
-		unsigned GetCPUCountOfThreads()
+		void SetNumberOfThreadsToMax()
 		{
-
+			SetNumberOfThreads(GetCPUNumberOfThreads());
 		}
 
-		unsigned GetGPUCountOfThreads()
+		unsigned GetNumberOfThreads()const
 		{
-			return 0;
+			return threadNumber;
 		}
 
-		void SwitchToGPU()
+		static unsigned GetCPUNumberOfThreads()
 		{
-			throw std::runtime_error("GPU not supported");
+			auto Number = std::thread::hardware_concurrency();
+			return Number == 0 ? 1 : Number;
 		}
-
-		void SwitchToCPU() {}
 	};
 }
