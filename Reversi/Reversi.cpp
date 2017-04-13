@@ -6,8 +6,7 @@ int main()
 {
 
 	GameWindow gameWindow;
-	gameWindow.Start();
+	gameWindow.start();
 
     return 0;
 }
-
