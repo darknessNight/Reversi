@@ -1,11 +1,11 @@
 #include "GameWindow.h"
 
 
-void GameWindow::Start() {
+void GameWindow::start() {
 
 	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi");
-	window.setPosition(sf::Vector2i(0, 0));
-
+	this->window.setPosition(sf::Vector2i(0, 0));
+	GameController gameController(this);
 
 	while (window.isOpen())
 	{
@@ -20,4 +20,48 @@ void GameWindow::Start() {
 
 	}
 
+}
+
+
+void GameWindow::draw(char gameBoard[8][8], sf::String communicate) {
+	sf::RectangleShape board(sf::Vector2f(8*SQUARESIZE, 8*SQUARESIZE));
+	sf::Texture boardTexture;
+	boardTexture.loadFromFile("BoardTexture.png");
+	boardTexture.setRepeated(true);
+	board.setTexture(&boardTexture,false);
+	board.setTextureRect(sf::IntRect(0, 0, 800, 800));
+
+	sf::CircleShape pawn(SQUARESIZE/2-1);
+
+	sf::Font font;
+	sf::Text text;
+	font.loadFromFile("Calibri.ttf");
+	text.setFont(font);
+	text.setCharacterSize(FONTSIZE);
+	text.setFillColor(sf::Color::White);
+	text.setString(communicate);
+	text.setPosition(sf::Vector2f(0,8*SQUARESIZE+20));
+
+	window.clear(sf::Color::Black);
+
+	window.draw(board);
+
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			if (gameBoard[i][j] == 1) {
+				pawn.setFillColor(sf::Color::White);
+				pawn.setPosition(sf::Vector2f(i*SQUARESIZE+1,j*SQUARESIZE+1));
+				window.draw(pawn);
+			}
+			else if (gameBoard[i][j] == 2) {
+				pawn.setFillColor(sf::Color::Black);
+				pawn.setPosition(sf::Vector2f(i*SQUARESIZE + 1, j*SQUARESIZE + 1));
+				window.draw(pawn);
+			}
+		}
+	}
+
+	window.draw(text);
+
+	window.display();
 }
