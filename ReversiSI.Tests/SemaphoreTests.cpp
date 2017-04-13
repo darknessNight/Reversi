@@ -114,5 +114,42 @@ namespace SI::Reversi::Tests
 			while ( sem.try_lock() )result++;
 			Assert::AreEqual(2, result);
 		}
+
+		TEST_METHOD(Copy_HasTwoAccessedSemaphore_CheckCopyHasSameDatas)
+		{
+			Semaphore sem(4);
+			for ( int i = 0; i<2; i++ )
+				sem.try_lock();
+			auto copy = sem;
+
+			int result = 0;
+			while ( copy.try_lock() )result++;
+			Assert::AreEqual(2, result);
+		}
+
+		TEST_METHOD(Copy_HasTwoAccessedSemaphore_CheckOriginHasSameDataLikeCopy)
+		{
+			Semaphore sem(4);
+			for ( int i = 0; i<2; i++ )
+				sem.try_lock();
+			auto copy = sem;
+			for ( int i = 0; i<2; i++ )
+				sem.unlock();
+
+			int result = 0;
+			while ( sem.try_lock() )result++;
+			Assert::AreEqual(4, result);
+		}
+
+		TEST_METHOD(Copy_FreeSemaphoreAndCopyWithChagedLimit_CheckOriginHasSameDataLikeCopy)
+		{
+			Semaphore sem(4);
+			auto copy = sem;
+			copy.ChangeAccessLimit(8);
+
+			int result = 0;
+			while ( sem.try_lock() )result++;
+			Assert::AreEqual(8, result);
+		}
 	};
 }
