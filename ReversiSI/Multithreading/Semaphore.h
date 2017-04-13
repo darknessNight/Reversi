@@ -61,10 +61,31 @@ namespace darknessNight::Multithreading
 			counterMutex->unlock();
 		}
 
+		unsigned GetFreeSlotNumber()const
+		{
+			std::lock_guard<std::mutex>(*counterMutex);
+			return *counter;
+		}
+
 	private:
 		unsigned min(unsigned a, unsigned b)
 		{
 			return a > b ? b : a;
+		}
+	};
+
+
+	class SemaphoreUnlocker
+	{
+		Semaphore sem;
+	public:
+		explicit SemaphoreUnlocker(Semaphore& semaphore)
+		{
+			sem = semaphore;
+		}
+		~SemaphoreUnlocker()
+		{
+			sem.unlock();
 		}
 	};
 }
