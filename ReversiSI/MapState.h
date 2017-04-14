@@ -75,6 +75,21 @@ namespace SI::Reversi
 			bytes[byteIndex] = bytes[byteIndex] & mask;
 			bytes[byteIndex] = bytes[byteIndex] | value;
 		}
+
+		bool operator==(const MapStateMemoryOptimized& other)
+		{
+			for ( int i = 0; i < bytesCount; i++ )
+			{
+				if ( bytes[i] != other.bytes[i] )
+					return false;
+			}
+			return true;
+		}
+
+		bool operator!=(const MapStateMemoryOptimized& other)
+		{
+			return !operator==(other);
+		}
 	};
 
 
@@ -141,6 +156,21 @@ namespace SI::Reversi
 		{
 			auto flatIndex = x*rowsCount + y;
 			bytes[flatIndex] = newState;
+		}
+
+		bool operator==(const MapStateProcessingOptimized& other)
+		{
+			for ( int i = 0; i < bytesCount; i++ )
+			{
+				if ( bytes[i] != other.bytes[i] )
+					return false;
+			}
+			return true;
+	}
+
+		bool operator!=(const MapStateProcessingOptimized& other)
+		{
+			return !operator==(other);
 		}
 	};
 

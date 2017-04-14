@@ -4,22 +4,26 @@
 
 namespace SI::Reversi
 {
-	class StateGenerator abstract
+	class StateGenerator
 	{
 	protected:
 		MapState currentState;
 		MapState::State nextPlayer;
-	protected:
+	public:
 		explicit StateGenerator(const MapState& state, const MapState::State nextPlayerState)
 			:currentState(state), nextPlayer(nextPlayerState)
 		{}
 		~StateGenerator() = default;
 	public:
-		virtual std::vector<MapState> GetAllNextStates(const MapState& state) = 0;
+		static std::vector<MapState> GetAllNextStates(const MapState& state, const MapState::State nextPlayerState) {}
 
-		virtual MapState GetNextState() = 0;
-		virtual bool HasNextState() = 0;
-		virtual void Reset() = 0;
+		virtual MapState GetNextState() {
+			return MapState();
+		}
+		virtual bool HasNextState() {
+			return false;
+		}
+		virtual void Reset() {}
 
 		virtual void SetCurrentState(const MapState&state)
 		{
