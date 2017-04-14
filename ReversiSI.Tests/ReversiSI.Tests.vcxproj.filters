@@ -35,5 +35,8 @@
     <ClCompile Include="MapState.cpp">
       <Filter>UnitTests</Filter>
     </ClCompile>
+    <ClCompile Include="StateGenerator.cpp">
+      <Filter>UnitTests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
