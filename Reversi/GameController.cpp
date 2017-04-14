@@ -14,5 +14,14 @@ GameController::GameController(GameWindow* handle) {
 	this->gameBoard[3][4] = 2;
 	this->gameBoard[4][3] = 2;
 
-	this->handle->draw(gameBoard, L"Pocz¹tek gry");
+	this->handle->draw(gameBoard, L"Pocz¹tek gry. Czarne zaczynaj¹.");
+
+	this->playerNumber = 2;
+}
+
+
+void GameController::pawnPlaced(int x, int y) {
+	this->gameBoard[x][y] = playerNumber;
+	playerNumber ^= 3;
+	this->handle->draw(gameBoard, L"Placeholder.");
 }

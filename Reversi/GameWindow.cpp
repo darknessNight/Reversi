@@ -6,6 +6,7 @@ void GameWindow::start() {
 	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi");
 	this->window.setPosition(sf::Vector2i(0, 0));
 	GameController gameController(this);
+	int temporaryX, temporaryY;
 
 	while (window.isOpen())
 	{
@@ -15,6 +16,19 @@ void GameWindow::start() {
 		{
 			if (event.type == sf::Event::Closed) {
 				window.close();
+			}
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					temporaryX = event.mouseButton.x/SQUARESIZE;
+					temporaryY = event.mouseButton.y/SQUARESIZE;
+				}
+			}
+			if (event.type == sf::Event::MouseButtonReleased) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					if (event.mouseButton.x/SQUARESIZE == temporaryX && event.mouseButton.y/SQUARESIZE == temporaryY) {
+						gameController.pawnPlaced(temporaryX, temporaryY);
+					}
+				}
 			}
 		}
 
