@@ -13,8 +13,10 @@ class GameWindow {
 public:
 	void start();
 	void doDraw();
+	void allowToClick();
 private:
 	sf::RenderWindow window;
 	bool shouldRedrawWindow;
+	bool canClick;
 	void draw(GameBoard gameBoard, sf::String communicate);
 };

@@ -36,19 +36,28 @@ void GameController::pawnPlaced(int x, int y) {
 void GameController::mainLoop() {
 	while(continueLoop) {
 		if (pawnWasPlaced) {
-			this->gameBoard.setSquare(placedPawnLocationX, placedPawnLocationY, playerNumber);
 
-			if (playerNumber == PlayerColor::BlackPlayer) {
-				playerNumber = PlayerColor::WhitePlayer;
-			}
-			else {
-				playerNumber = PlayerColor::BlackPlayer;
-			}
+			if (checkIfMoveIsLegal(placedPawnLocationX, placedPawnLocationY, playerNumber)) {
 
-			communicate = L"Placeholder.";
-			this->handle->doDraw();
+				this->gameBoard.setSquare(placedPawnLocationX, placedPawnLocationY, playerNumber);
+
+
+				if (playerNumber == PlayerColor::BlackPlayer) {
+					playerNumber = PlayerColor::WhitePlayer;
+					communicate = L"Ruch bia³ego.";
+				}
+				else {
+					playerNumber = PlayerColor::BlackPlayer;
+					communicate = L"Ruch czarnego.";
+				}
+
+				
+				this->handle->doDraw();
+			}
 
 			pawnWasPlaced = false;
+
+			this->handle->allowToClick();
 		}
 		_sleep(100);
 	}
@@ -67,4 +76,49 @@ sf::String GameController::getCommunicate(){
 
 GameBoard GameController::getGameBoard() {
 	return gameBoard;
+}
+
+
+bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color) {
+
+	if (gameBoard.getSquare(x, y) != PlayerColor::EmptyField) {
+		return false;
+	}
+
+	PlayerColor oppositColor;
+	if (color == PlayerColor::BlackPlayer) {
+		oppositColor = PlayerColor::WhitePlayer;
+	}
+	else {
+		oppositColor = PlayerColor::BlackPlayer;
+	}
+
+	bool metOppositColor = false;
+
+	for (int xchange = -1; xchange < 2; xchange++) {
+		for (int ychange = -1; ychange < 2; ychange++) {
+			int tempx = x, tempy = y;
+			metOppositColor = false;
+			while (tempx+xchange!=8 && tempx+xchange!=-1 && tempy+ychange!=8 && tempy+ychange!=-1) {
+				tempx += xchange;
+				tempy += ychange;
+				if (gameBoard.getSquare(tempx, tempy) == oppositColor) {
+					metOppositColor = true;
+				}
+				else if (gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField) {
+					break;
+				}
+				else if (gameBoard.getSquare(tempx, tempy) == color) {
+					if (metOppositColor) {
+						return true;
+					}
+					else{
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }

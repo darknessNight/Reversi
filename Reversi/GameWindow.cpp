@@ -4,6 +4,7 @@
 void GameWindow::start() {
 
 	shouldRedrawWindow = false;
+	canClick = true;
 	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi", sf::Style::Close);
 	this->window.setPosition(sf::Vector2i(0, 0));
 	GameController gameController(this);
@@ -27,9 +28,10 @@ void GameWindow::start() {
 				}
 			}
 			if (event.type == sf::Event::MouseButtonReleased) {
-				if (event.mouseButton.button == sf::Mouse::Left) {
+				if (event.mouseButton.button == sf::Mouse::Left && canClick) {
 					if (event.mouseButton.x/SQUARESIZE == temporaryX && event.mouseButton.y/SQUARESIZE == temporaryY) {
 						gameController.pawnPlaced(temporaryX, temporaryY);
+						canClick = false;
 					}
 				}
 			}
@@ -92,6 +94,12 @@ void GameWindow::draw(GameBoard gameBoard, sf::String communicate) {
 	shouldRedrawWindow = false;
 }
 
+
 void GameWindow::doDraw() {
 	shouldRedrawWindow = true;
+}
+
+
+void GameWindow::allowToClick() {
+	canClick = true;
 }

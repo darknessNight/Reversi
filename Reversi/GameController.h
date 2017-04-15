@@ -25,4 +25,5 @@ private:
 	int placedPawnLocationY;
 	sf::String communicate;
 	void mainLoop();
+	bool checkIfMoveIsLegal(int x, int y, PlayerColor color);
 };
