@@ -6,22 +6,29 @@ GameController::GameController(GameWindow* handle) {
 
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			this->gameBoard[i][j] = 0;
+			this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
 		}
 	}
-	this->gameBoard[3][3] = 1;
-	this->gameBoard[4][4] = 1;
-	this->gameBoard[3][4] = 2;
-	this->gameBoard[4][3] = 2;
+	this->gameBoard.setSquare(3, 3, PlayerColor::WhitePlayer);
+	this->gameBoard.setSquare(4, 4, PlayerColor::WhitePlayer);
+	this->gameBoard.setSquare(3, 4, PlayerColor::BlackPlayer);
+	this->gameBoard.setSquare(4, 3, PlayerColor::BlackPlayer);
 
 	this->handle->draw(gameBoard, L"Pocz¹tek gry. Czarne zaczynaj¹.");
 
-	this->playerNumber = 2;
+	this->playerNumber = PlayerColor::BlackPlayer;
 }
 
 
 void GameController::pawnPlaced(int x, int y) {
-	this->gameBoard[x][y] = playerNumber;
-	playerNumber ^= 3;
+	this->gameBoard.setSquare(x, y, playerNumber);
+
+	if (playerNumber == PlayerColor::BlackPlayer) {
+		playerNumber = PlayerColor::WhitePlayer;
+	}
+	else {
+		playerNumber = PlayerColor::BlackPlayer;
+	}
+
 	this->handle->draw(gameBoard, L"Placeholder.");
 }

@@ -1,5 +1,8 @@
 #pragma once
 #include "GameWindow.h"
+#include "PlayerColor.h"
+#include "GameBoard.h"
+
 class GameWindow;
 
 
@@ -9,6 +12,6 @@ public:
 	void pawnPlaced(int x, int y);
 private:
 	GameWindow* handle;
-	char gameBoard[8][8];
-	int playerNumber;
+	GameBoard gameBoard;
+	PlayerColor playerNumber;
 };

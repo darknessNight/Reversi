@@ -146,8 +146,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameBoard.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="PlayerColor.h" />
     <ClCompile Include="Reversi.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +161,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameBoard.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameWindow.h" />
   </ItemGroup>

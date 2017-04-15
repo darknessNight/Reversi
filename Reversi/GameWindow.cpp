@@ -37,7 +37,7 @@ void GameWindow::start() {
 }
 
 
-void GameWindow::draw(char gameBoard[8][8], sf::String communicate) {
+void GameWindow::draw(GameBoard gameBoard, sf::String communicate) {
 	sf::RectangleShape board(sf::Vector2f(8*SQUARESIZE, 8*SQUARESIZE));
 	sf::Texture boardTexture;
 	boardTexture.loadFromFile("BoardTexture.png");
@@ -62,12 +62,12 @@ void GameWindow::draw(char gameBoard[8][8], sf::String communicate) {
 
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (gameBoard[i][j] == 1) {
+			if (gameBoard.getSquare(i, j) == PlayerColor::WhitePlayer) {
 				pawn.setFillColor(sf::Color::White);
 				pawn.setPosition(sf::Vector2f(i*SQUARESIZE+1,j*SQUARESIZE+1));
 				window.draw(pawn);
 			}
-			else if (gameBoard[i][j] == 2) {
+			else if (gameBoard.getSquare(i, j) == PlayerColor::BlackPlayer) {
 				pawn.setFillColor(sf::Color::Black);
 				pawn.setPosition(sf::Vector2f(i*SQUARESIZE + 1, j*SQUARESIZE + 1));
 				window.draw(pawn);
