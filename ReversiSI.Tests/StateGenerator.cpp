@@ -45,7 +45,7 @@ namespace SI::Reversi::Tests
 					}
 				}
 				if ( !found )
-					Assert::Fail(L"Not founded one of next states");//mo¿na zmieniæ ¿eby wyœwietla³o coœ sensownego
+					Assert::Fail(L"Didn\'t find one of next states");//mo¿na zmieniæ ¿eby wyœwietla³o coœ sensownego
 			}
 		}
 	};
