@@ -14,21 +14,57 @@ GameController::GameController(GameWindow* handle) {
 	this->gameBoard.setSquare(3, 4, PlayerColor::BlackPlayer);
 	this->gameBoard.setSquare(4, 3, PlayerColor::BlackPlayer);
 
-	this->handle->draw(gameBoard, L"Pocz¹tek gry. Czarne zaczynaj¹.");
+	communicate = L"Pocz¹tek gry. Czarne zaczynaj¹.";
+	this->handle->doDraw();
 
 	this->playerNumber = PlayerColor::BlackPlayer;
+
+	this->continueLoop = true;
+	this->pawnWasPlaced = false;
+
+	std::thread(&GameController::mainLoop, this).detach();
 }
 
 
 void GameController::pawnPlaced(int x, int y) {
-	this->gameBoard.setSquare(x, y, playerNumber);
+	placedPawnLocationX = x;
+	placedPawnLocationY = y;
+	pawnWasPlaced = true;
+}
 
-	if (playerNumber == PlayerColor::BlackPlayer) {
-		playerNumber = PlayerColor::WhitePlayer;
-	}
-	else {
-		playerNumber = PlayerColor::BlackPlayer;
-	}
 
-	this->handle->draw(gameBoard, L"Placeholder.");
+void GameController::mainLoop() {
+	while(continueLoop) {
+		if (pawnWasPlaced) {
+			this->gameBoard.setSquare(placedPawnLocationX, placedPawnLocationY, playerNumber);
+
+			if (playerNumber == PlayerColor::BlackPlayer) {
+				playerNumber = PlayerColor::WhitePlayer;
+			}
+			else {
+				playerNumber = PlayerColor::BlackPlayer;
+			}
+
+			communicate = L"Placeholder.";
+			this->handle->doDraw();
+
+			pawnWasPlaced = false;
+		}
+		_sleep(100);
+	}
+}
+
+
+void GameController::closeMainLoop() {
+	continueLoop = false;
+}
+
+
+sf::String GameController::getCommunicate(){
+	return communicate;
+}
+
+
+GameBoard GameController::getGameBoard() {
+	return gameBoard;
 }

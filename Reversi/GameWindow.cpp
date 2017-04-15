@@ -3,10 +3,12 @@
 
 void GameWindow::start() {
 
-	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi");
+	shouldRedrawWindow = false;
+	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi", sf::Style::Close);
 	this->window.setPosition(sf::Vector2i(0, 0));
 	GameController gameController(this);
 	int temporaryX, temporaryY;
+	
 
 	while (window.isOpen())
 	{
@@ -15,6 +17,7 @@ void GameWindow::start() {
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed) {
+				gameController.closeMainLoop();
 				window.close();
 			}
 			if (event.type == sf::Event::MouseButtonPressed) {
@@ -30,6 +33,13 @@ void GameWindow::start() {
 					}
 				}
 			}
+			if (event.type == sf::Event::GainedFocus) {
+				doDraw();
+			}
+		}
+
+		if (shouldRedrawWindow) {
+			draw(gameController.getGameBoard(), gameController.getCommunicate());
 		}
 
 	}
@@ -78,4 +88,10 @@ void GameWindow::draw(GameBoard gameBoard, sf::String communicate) {
 	window.draw(text);
 
 	window.display();
+
+	shouldRedrawWindow = false;
+}
+
+void GameWindow::doDraw() {
+	shouldRedrawWindow = true;
 }

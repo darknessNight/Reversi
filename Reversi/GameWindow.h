@@ -12,7 +12,9 @@
 class GameWindow {
 public:
 	void start();
-	void draw(GameBoard gameBoard, sf::String communicate);
+	void doDraw();
 private:
 	sf::RenderWindow window;
+	bool shouldRedrawWindow;
+	void draw(GameBoard gameBoard, sf::String communicate);
 };
