@@ -83,7 +83,7 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x + 1, y) == MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y) != MapState::State::Empty)
 	{
 		for (unsigned int i = x + 1; i < MapState::rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(i, y);
@@ -114,7 +114,7 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x, y + 1) == MapState::State::Empty)
+	if (this->currentState.GetFieldState(x, y + 1) != MapState::State::Empty)
 	{
 		for (unsigned int i = y + 1; i < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x, i);
@@ -134,10 +134,10 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 	MapState::State fieldState;
 	if (this->currentState.GetFieldState(x - 1, y - 1) != MapState::State::Empty)
 	{
-		for (unsigned int i = 1; x - i >= 0 || y - i >= 0; i++) {
+		for (unsigned int i = 1; (x - i) > 0 && (y - i) > 0; i++) {
 			fieldState = this->currentState.GetFieldState(x - i, y - i);
 			if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
-				foundFields->push_back({ x - i, y - i, x, y, LineDirection::SouthEast});
+				foundFields->push_back({ x - i, y - i, x, y, LineDirection::NorthWest });
 				break;
 			}
 		}
@@ -145,12 +145,12 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x, y + 1) == MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y + 1) != MapState::State::Empty)
 	{
-		for (unsigned int i = 1; x + i < this->currentState.colsCount || y + i < this->currentState.rowsCount; i++) {
+		for (unsigned int i = 1; x + i < this->currentState.colsCount && y + i < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x + i, y + i);
 			if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
-				foundFields->push_back({ x + i, y + i, x, y, LineDirection::NorthWest });
+				foundFields->push_back({ x + i, y + i, x, y, LineDirection::SouthEast });
 				break;
 			}
 		}
@@ -163,9 +163,9 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
 	MapState::State fieldState;
-	if (this->currentState.GetFieldState(x - 1, y - 1) != MapState::State::Empty)
+	if (this->currentState.GetFieldState(x - 1, y + 1) != MapState::State::Empty)
 	{
-		for (unsigned int i = 1; x - i >= 0 || y + i < this->currentState.rowsCount; i++) {
+		for (unsigned int i = 1; (x - i) > 0 && (y + i) < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x - i, y - i);
 			if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
 				foundFields->push_back({ x - i, y + i, x, y, LineDirection::SouthWest });
@@ -176,10 +176,10 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x, y + 1) == MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y - 1) != MapState::State::Empty)
 	{
-		for (unsigned int i = 1; x + i < this->currentState.colsCount || y - i >= 0; i++) {
-			fieldState = this->currentState.GetFieldState(x + i, y + i);
+		for (unsigned int i = 1; (x + i) < this->currentState.colsCount && (y - i) > 0; i++) {
+			fieldState = this->currentState.GetFieldState(x + i, y - i);
 			if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
 				foundFields->push_back({ x + i, y - i, x, y, LineDirection::NorthEast });
 				break;
@@ -190,18 +190,18 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 }
 
 bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(MapState::State fieldState, 
-	bool * opponentPieceFound, bool * ownPieceFound)
+	bool* opponentPieceFound, bool* ownPieceFound)
 {
-	if (fieldState != this->nextPlayer && fieldState != MapState::State::Empty && !opponentPieceFound) {
+	if (fieldState != this->nextPlayer && fieldState != MapState::State::Empty && !*opponentPieceFound) {
 		*opponentPieceFound = true;
 	}
-	else if (fieldState == this->nextPlayer && !opponentPieceFound) {
+	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
 		*ownPieceFound = true;
 	}
-	else if (fieldState == this->nextPlayer && opponentPieceFound) {
+	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
 		return false;
 	}
-	else if (fieldState == MapState::State::Empty && opponentPieceFound && !ownPieceFound) {
+	else if (fieldState == MapState::State::Empty && *opponentPieceFound && !*ownPieceFound) {
 		return true;
 	}
 	return false;
@@ -209,18 +209,12 @@ bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(MapState::State f
 
 void SI::Reversi::StateGenerator::generateNewStatesBasedOnFoundPoints()
 {
-
 	for (int i = 0; i < foundFields->size(); i++) {
+		
 		int xDifference = abs(foundFields->at(i).currX - foundFields->at(i).newX);
 		int yDifference = abs(foundFields->at(i).currY - foundFields->at(i).newY);
 		if (validateMove(xDifference, yDifference)) {
-			if (i != 0) {
-				if(this->nextMapStates->at(i - 1) != this->currentState)	//checking if there was an attempt to generate the same state twice
-					this->nextMapStates->push_back(MapState(this->currentState));
-			}
-			else
-				this->nextMapStates->push_back(MapState(this->currentState));
-
+			this->nextMapStates->push_back(MapState(this->currentState));
 			setNewFieldState(i);
 		}
 	}
@@ -229,10 +223,7 @@ void SI::Reversi::StateGenerator::generateNewStatesBasedOnFoundPoints()
 void SI::Reversi::StateGenerator::setNewFieldState(int i)
 {
 	PossibleAndCurrentFields currentFields = foundFields->at(i);
-	std::vector<PossibleAndCurrentFields> fieldsWithSameDestination = getDuplicates(currentFields);
-
-	if (fieldsWithSameDestination.size() == 0)	//this means, that the state we are about to generate was already generated before
-		return;
+	std::vector<PossibleAndCurrentFields> fieldsWithSameDestination = getAndRemoveDuplicates(currentFields);
 
 	unsigned int incrementX, incrementY, x, y, xDifference, yDifference;
 	
@@ -246,9 +237,9 @@ void SI::Reversi::StateGenerator::setNewFieldState(int i)
 		setIncrementalValuesAccordingToDirection(&incrementX, &incrementY, currentFields.direction);
 		for (unsigned int i = 0; i < max(xDifference, yDifference); i++) 
 		{
-			this->nextMapStates->at(this->nextMapStates->size() - 1).SetFieldState(x, y, this->nextPlayer);
 			x += incrementX;
 			y += incrementY;
+			this->nextMapStates->at(this->nextMapStates->size() - 1).SetFieldState(x, y, this->nextPlayer);
 		}
 	}
 }
@@ -307,17 +298,27 @@ void SI::Reversi::StateGenerator::setIncrementalValuesAccordingToDirection(unsig
 	}
 }
 
-std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getDuplicates(PossibleAndCurrentFields currentFields)
+std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveDuplicates(PossibleAndCurrentFields currentFields)
 {
 	std::vector<PossibleAndCurrentFields> Duplicates = std::vector<PossibleAndCurrentFields>();
-	for (int i = 0; i < foundFields->size(); i++) {
-		if (foundFields->at(i).newX == currentFields.newX && foundFields->at(i).newY == currentFields.newY) {
-			if (i != 0 && foundFields->at(i).currX == currentFields.currX && foundFields->at(i).currY == currentFields.currY)
-				return std::vector<PossibleAndCurrentFields>();
+	for (int i = 0; i < foundFields->size(); i++) 
+	{
+		if (foundFields->at(i).newX == currentFields.newX && foundFields->at(i).newY == currentFields.newY) 
+		{
+			//if (i != 0 && foundFields->at(i).currX == currentFields.currX && foundFields->at(i).currY == currentFields.currY)
+				//return std::vector<PossibleAndCurrentFields>();
+			
 			Duplicates.push_back(foundFields->at(i));
+			if (Duplicates.size() > 1)
+				foundFields->erase(foundFields->begin() + i);
 		}
 	}
 	return std::vector<PossibleAndCurrentFields>(Duplicates);
+}
+
+void SI::Reversi::StateGenerator::removeFromFoundFields(unsigned int i)
+{
+
 }
 
 MapState SI::Reversi::StateGenerator::GetNextState()

@@ -52,7 +52,9 @@ namespace SI::Reversi
 		void setNewFieldState(int i);
 		bool validateMove(int xDifference, int yDifference);
 		void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
-		std::vector<PossibleAndCurrentFields> getDuplicates(PossibleAndCurrentFields currentFields);
+		std::vector<PossibleAndCurrentFields> getAndRemoveDuplicates(PossibleAndCurrentFields currentFields);
+		void removeFromFoundFields(unsigned int i);
+		
 	public:
 		explicit StateGenerator(const MapState& state, const MapState::State nextPlayerState)
 			:currentState(state), nextPlayer(nextPlayerState)
