@@ -20,11 +20,43 @@ namespace SI::Reversi::Tests
 			state.SetFieldState(4, 3, MapState::State::Player2);
 			StateGenerator generator(state, MapState::State::Player1);
 
-			std::vector<MapState> result;
+			std::vector<MapState> result = generator.GetAllNextStates(state, MapState::State::Player1);
 			while ( generator.HasNextState() )
 				result.push_back(generator.GetNextState());
+			std::vector<MapState> expected = std::vector<MapState>();
 
-			std::vector<MapState> expected={MapState()};//=tutaj coœ wpisz
+			MapState expectedState;
+			expectedState.SetFieldState(4, 4, MapState::State::Player1);
+			expectedState.SetFieldState(4, 3, MapState::State::Player1);
+			expectedState.SetFieldState(4, 2, MapState::State::Player1);
+			expectedState.SetFieldState(3, 3, MapState::State::Player1);
+			expectedState.SetFieldState(3, 4, MapState::State::Player2);
+
+			expected.push_back(expectedState);
+
+			expectedState.SetFieldState(4, 4, MapState::State::Player1);
+			expectedState.SetFieldState(4, 3, MapState::State::Player2);
+			expectedState.SetFieldState(2, 4, MapState::State::Player1);
+			expectedState.SetFieldState(3, 3, MapState::State::Player1);
+			expectedState.SetFieldState(3, 4, MapState::State::Player1);
+
+			expected.push_back(expectedState);
+
+			expectedState.SetFieldState(3, 3, MapState::State::Player1);
+			expectedState.SetFieldState(4, 3, MapState::State::Player1);
+			expectedState.SetFieldState(5, 3, MapState::State::Player1);
+			expectedState.SetFieldState(4, 4, MapState::State::Player1);
+			expectedState.SetFieldState(3, 4, MapState::State::Player2);
+
+			expected.push_back(expectedState);
+
+			expectedState.SetFieldState(3, 3, MapState::State::Player1);
+			expectedState.SetFieldState(4, 3, MapState::State::Player2);
+			expectedState.SetFieldState(3, 4, MapState::State::Player1);
+			expectedState.SetFieldState(4, 4, MapState::State::Player1);
+			expectedState.SetFieldState(3, 5, MapState::State::Player1);
+
+			expected.push_back(expectedState);
 
 			MatchNextStates(expected, result);
 		}

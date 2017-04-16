@@ -32,35 +32,36 @@ namespace SI::Reversi
 		MapState currentState;
 		MapState::State nextPlayer;
 
-		static void getAvaliableStatesForGivenField(const MapState & state, 
-			const MapState::State nextPlayerState, std::vector<MapState>* mapStates, std::vector<PossibleAndCurrentFields>* foundFields);
+		unsigned int currentStateIndex;
+
+		std::vector<PossibleAndCurrentFields>* foundFields = nullptr;
+		std::vector<MapState>* nextMapStates = nullptr;
+
+		void emptyAllVectors();
+		void getAvaliableStatesForGivenField();
 
 		
-		static void checkHorizontalLine(unsigned int x, unsigned int y, const MapState & state,
-			const MapState::State nextPlayerState, std::vector<PossibleAndCurrentFields>* foundFields);
-		static void checkVerticalLine(unsigned int x, unsigned int y, const MapState & state,
-			const MapState::State nextPlayerState, std::vector<PossibleAndCurrentFields>* foundFields);
-		static void checkDiagonalLineNW_SE(unsigned int x, unsigned int y, const MapState & state,
-			const MapState::State nextPlayerState, std::vector<PossibleAndCurrentFields>* foundFields);
-		static void checkDiagonalLineNE_SW(unsigned int x, unsigned int y, const MapState & state,
-			const MapState::State nextPlayerState, std::vector<PossibleAndCurrentFields>* foundFields);
+		void checkHorizontalLine(unsigned int x, unsigned int y);
+		void checkVerticalLine(unsigned int x, unsigned int y);
+		void checkDiagonalLineNW_SE(unsigned int x, unsigned int y);
+		void checkDiagonalLineNE_SW(unsigned int x, unsigned int y);
 		
-		static bool checkMovePossibillityOnField(MapState::State fieldState, MapState::State nextPlayerState,
-			bool* opponentPieceFound, bool* ownPieceFound);
+		bool checkMovePossibillityOnField(MapState::State fieldState, bool* opponentPieceFound, bool* ownPieceFound);
 
-		static void generateNewStatesBasedOnFoundPoints(MapState::State nextPlayerState, std::vector<PossibleAndCurrentFields>* foundFields, const MapState & state,
-			std::vector<MapState>* newMapStates);
-		static void setNewFieldState(MapState::State nextPlayerState, std::vector<MapState>* newMapStates, std::vector<PossibleAndCurrentFields>* foundFields, int i);
-		static bool validateMove(int xDifference, int yDifference);
-		static void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
-		static std::vector<PossibleAndCurrentFields> getDuplicates(std::vector<PossibleAndCurrentFields>* foundFields, PossibleAndCurrentFields currentFields);
+		void generateNewStatesBasedOnFoundPoints();
+		void setNewFieldState(int i);
+		bool validateMove(int xDifference, int yDifference);
+		void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
+		std::vector<PossibleAndCurrentFields> getDuplicates(PossibleAndCurrentFields currentFields);
 	public:
 		explicit StateGenerator(const MapState& state, const MapState::State nextPlayerState)
 			:currentState(state), nextPlayer(nextPlayerState)
 		{}
 		~StateGenerator() = default;
 	public:
-		static std::vector<MapState> GetAllNextStates(const MapState& state, const MapState::State nextPlayerState);
+
+
+		std::vector<MapState> GetAllNextStates(const MapState& state, const MapState::State nextPlayerState);
 
 		virtual MapState GetNextState();
 		virtual bool HasNextState();
@@ -76,7 +77,7 @@ namespace SI::Reversi
 			return currentState;
 		}
 
-		static unsigned int abs(unsigned int a) {
+		static int abs(int a) {
 			if (a >= 0)	return a;
 			else return -a;
 		}
