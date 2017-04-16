@@ -14,11 +14,11 @@ public:
 		*reinterpret_cast<SI::Reversi::BoardState*>(this) = other;
 	}
 
-	char GetHiddenValue(unsigned x, unsigned y) const{
+	int GetHiddenValue(unsigned x, unsigned y) const{
 		return bytes[GetFlatIndex(x, y)];
 	}
 
-	void SetHiddenValue(unsigned x, unsigned y, char value) {
+	void SetHiddenValue(unsigned x, unsigned y, int value) {
 		bytes[GetFlatIndex(x, y)] = value;
 	}
 };
@@ -54,7 +54,10 @@ namespace SI::Reversi::Tests
 		BoardState winning;
 		std::vector<BoardState> losing;
 		unsigned generated = 0;
+		std::shared_ptr<std::mutex> mutex=std::make_shared<std::mutex>();
 	public:
+		unsigned winningForFirsts = 0;
+
 		FakeStateGenerator() = default;
 		FakeStateGenerator(unsigned depth, unsigned childCount, unsigned posOfWin, unsigned depthOfWin, BoardState win)
 		{
@@ -90,24 +93,25 @@ namespace SI::Reversi::Tests
 		}
 
 		BoardState GetNextState() override {
+			std::lock_guard<std::mutex> lock(*mutex);
 			FakeBoardState current = this->currentState;
 			auto number = current.GetHiddenValue(6, 7)-10;
 			if (number < 0)number = 0;
-			int nextNumber = number*childNodesCount + generated;
+			int nextNumber = number*childNodesCount + generated++;
 			auto depth = current.GetHiddenValue(7, 7) - 10;
 			if (depth < 0)depth = 1;
 			if (depth == depthOfWinning && nextNumber == posOfWinning) {
-				generated++;
 				return winning;
 			}
 
-			FakeBoardState child = losing[generated++%losing.size()];
+			FakeBoardState child = winningForFirsts>nextNumber?winning:losing[nextNumber%losing.size()];
 			child.SetHiddenValue(7, 7, depth + 1 + 10);
 			child.SetHiddenValue(6, 7, nextNumber + 10);
 			return static_cast<BoardState>(child);
 		}
 
 		bool HasNextState() override {
+			std::lock_guard<std::mutex> lock(*mutex);
 			FakeBoardState current = this->currentState;
 			auto depth = current.GetHiddenValue(7, 7) - 10;
 			if (depth < 0)depth = 0;
@@ -117,12 +121,14 @@ namespace SI::Reversi::Tests
 		}
 
 		void Reset() override {
+			std::lock_guard<std::mutex> lock(*mutex);
 			generated = 0;
 		}
 
 		std::shared_ptr<StateGenerator> MakeCopy()
 		{
-			std::shared_ptr<StateGenerator> ret = std::make_shared<FakeStateGenerator>(*this);
+			std::shared_ptr<FakeStateGenerator> ret = std::make_shared<FakeStateGenerator>(*this);
+			ret->mutex = std::make_shared<std::mutex>();
 			return ret;
 		}
 	};
@@ -232,31 +238,34 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(GetBestMove_HasGeneratorWithWinningOnLastPosSecondLevelAndStaring_CheckGetFirstZero)
 		{
-			auto winning = GetWinning(BoardState::FieldState::Player1);
-			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 4, 2, winning);
 			FakeBoardState expected = GetWinning(BoardState::FieldState::Empty);
 			expected.SetFieldState(1, 1, BoardState::FieldState::Player1);
-			fakeGenerator->SetStatetsOfLosing({ expected, BoardState() });
+			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 4, 2, expected);
+			fakeGenerator->winningForFirsts = 125;
+
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
 			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
 
 			FakeBoardState result = minmax.GetBestMove();
 
 			expected.SetHiddenValue(7, 7, 12);
-			result.SetHiddenValue(6, 7, 0);
+			expected.SetHiddenValue(6, 7, 10);
 			Assert::AreEqual<FakeBoardState>(expected, result);
 		}
 
 		TEST_METHOD(GetBestMove_HasGeneratorWithWinningOnLastPosLastLevelAndStaring_CheckReturnWinning)
 		{
 			auto winning = GetWinning(BoardState::FieldState::Player1);
-			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 0, 5, winning);
+			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 0, 4, winning);
+
+			fakeGenerator->winningForFirsts = 125;
+
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
 			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
-
+			
 			FakeBoardState result = minmax.GetBestMove();
 
-			FakeBoardState expected = BoardState();
+			FakeBoardState expected = GetWinning(BoardState::FieldState::Player1);
 			expected.SetHiddenValue(7, 7, 12);
 			expected.SetHiddenValue(6, 7, 10);
 

@@ -19,7 +19,15 @@ namespace SI::Reversi
 
 		virtual ~StateGenerator() = default;
 
-		//virtual std::vector<BoardState> GetAllNextStates(const BoardState& state) = 0;
+		virtual std::vector<BoardState> GetAllNextStates()
+		{
+			std::vector<BoardState> result;
+			while(HasNextState())
+			{
+				result.push_back(GetNextState());
+			}
+			return result;
+		}
 
 		virtual BoardState GetNextState()
 		{

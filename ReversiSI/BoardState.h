@@ -101,17 +101,23 @@ namespace SI::Reversi
 		static const auto colsCount = BoardStateMemoryOptimized::colsCount;
 	protected:
 		static const auto bytesCount = rowsCount*colsCount;
+#ifdef _DEBUG
+		static const auto typeSize = sizeof(int);
+		unsigned int bytes[bytesCount];
+#else
+		static const auto typeSize = sizeof(char);
 		unsigned char bytes[bytesCount];
+#endif
 	public:
 		typedef BoardStateMemoryOptimized::State FieldState;
 	public:
 		explicit BoardStateProcessingOptimized(char bytes[bytesCount])
 		{
-			memcpy(this->bytes, bytes, bytesCount);
+			memcpy(this->bytes, bytes, bytesCount*typeSize);
 		}
 		explicit BoardStateProcessingOptimized(int* bytes)
 		{
-			memcpy(this->bytes, bytes, bytesCount);
+			memcpy(this->bytes, bytes, bytesCount*typeSize);
 		}
 
 		explicit BoardStateProcessingOptimized(const BoardStateMemoryOptimized & memoryOther)
@@ -126,11 +132,11 @@ namespace SI::Reversi
 		}
 		BoardStateProcessingOptimized(const BoardStateProcessingOptimized& other)
 		{
-			memcpy(this->bytes, other.bytes, bytesCount);
+			memcpy(this->bytes, other.bytes, bytesCount*typeSize);
 		}
 		BoardStateProcessingOptimized(const BoardStateProcessingOptimized&& other) noexcept
 		{
-			memcpy(this->bytes, other.bytes, bytesCount);
+			memcpy(this->bytes, other.bytes, bytesCount*typeSize);
 		}
 		BoardStateProcessingOptimized()
 		{
@@ -138,12 +144,12 @@ namespace SI::Reversi
 		}
 		BoardStateProcessingOptimized& operator=(const BoardStateProcessingOptimized& other)
 		{
-			memcpy(this->bytes, other.bytes, bytesCount);
+			memcpy(this->bytes, other.bytes, bytesCount*typeSize);
 			return *this;
 		}
 		BoardStateProcessingOptimized& operator=(const BoardStateProcessingOptimized&& other)
 		{
-			memcpy(this->bytes, other.bytes, bytesCount);
+			memcpy(this->bytes, other.bytes, bytesCount*typeSize);
 			return *this;
 		}
 		

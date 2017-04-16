@@ -17,6 +17,10 @@ namespace darknessNight::Multithreading
 		{
 		}
 
+		ParallelJobExecutor(unsigned number) : threadNumber(number - 1), semaphore(threadNumber)
+		{
+		}
+
 		template <typename T>
 		void ForEach(std::function<void(T&)> func, std::vector<T> &elements)
 		{
