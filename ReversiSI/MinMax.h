@@ -10,7 +10,20 @@ using darknessNight::Multithreading::ParallelJobExecutor;
 namespace SI::Reversi {
 	class MinMax {
 	protected:
-		BoardState currentState;
+		struct MinMaxNode
+		{
+			double value;
+			bool maximizing = false;
+			BoardState state;
+			std::weak_ptr<MinMaxNode> parent;
+			std::vector<std::shared_ptr<MinMaxNode>> children;
+
+			MinMaxNode(const BoardState& state, bool maximizing = false)
+				:state(state), maximizing(maximizing), value(maximizing ? -1 : 1 * std::numeric_limits<double>::max())
+			{}
+		};
+	protected:
+		MinMaxNode currentState;
 		BoardState::FieldState siPlayer;
 		BoardState::FieldState currentPlayer = BoardState::FieldState::Player1;
 		std::function<double(const BoardState&)> heur;
@@ -18,11 +31,11 @@ namespace SI::Reversi {
 		unsigned minimumDepth;
 		std::shared_ptr<ParallelJobExecutor> executor;
 		std::fstream file;
-		std::shared_ptr<std::mutex> out=std::make_shared<std::mutex>();
+		std::shared_ptr<std::mutex> out = std::make_shared<std::mutex>();
 
 	public:
 		MinMax(BoardState startState, BoardState::FieldState siPlayer, unsigned minDepth, std::function<double(const BoardState&)> aprox)
-			: currentState(startState), siPlayer(siPlayer), heur(aprox), generatorFabric([]() {return std::make_shared<StateGenerator>(); }),
+			: currentState(startState, siPlayer == BoardState::FieldState::Player1), siPlayer(siPlayer), heur(aprox), generatorFabric([]() {return std::make_shared<StateGenerator>(); }),
 			minimumDepth(minDepth), executor(std::make_shared<ParallelJobExecutor>())
 		{
 			file.open("D:\\desktop\\CLog.log", std::ios::out);
@@ -44,7 +57,7 @@ namespace SI::Reversi {
 			auto generator = CheckAndPrepare();
 
 			if (!generator->HasNextState())
-				return currentState;
+				return currentState.state;
 
 			return FindBestMove(generator);
 		}
@@ -57,67 +70,83 @@ namespace SI::Reversi {
 			IncrementPlayer();
 
 			auto generator = generatorFabric();
-			generator->StateGenerator::SetCurrentState(currentState);
+			generator->StateGenerator::SetCurrentState(currentState.state);
 			return generator;
 		}
 
 		BoardState FindBestMove(std::shared_ptr<StateGenerator> generator)
 		{
 			std::mutex mutex;
-			BoardState bestState;
+			BoardState bestState = currentState.state;
 			auto bestValue = -std::numeric_limits<double>::max();
 			auto nextStates = generator->GetAllNextStates();
 
 			executor->ForEach<BoardState>([&](BoardState& nextState)
 			{
-				auto res = minimax(nextState, minimumDepth, false);
+				auto next = std::make_shared<MinMaxNode>(nextState, false);
+				next->parent = std::make_shared<MinMaxNode>(currentState);
 				{
-					std::lock_guard<std::mutex> lock(*out);
-					std::clog << 6<< " my " << " " << res << "\n";
+					std::lock_guard<std::mutex> lock(mutex);
+					currentState.children.push_back(next);
 				}
-				std::lock_guard<std::mutex> lock(mutex);
-				if (res > bestValue)
-				{
-					bestValue = res;
-					bestState = nextState;
-				}
+				minimax(next, false, minimumDepth);
 			}, nextStates);
+
+			for(auto el:currentState.children)
+			{
+				if(bestValue<el->value)
+				{
+					bestState = el->state;
+					bestValue = el->value;
+				}
+			}
 
 			currentState = bestState;
 			return bestState;
 		}
 
-		double minimax(BoardState node, unsigned depth, bool maximizingPlayer)
+		void minimax(std::shared_ptr<MinMaxNode> node, bool maximizingPlayer, unsigned depth)
 		{
 			auto generator = generatorFabric();
-			generator->SetCurrentState(node);
-			if (depth == 0 || !generator->HasNextState()) {
-				std::lock_guard<std::mutex> lock(*out);
-				std::clog << 0 << (maximizingPlayer?" my":" him") << " " << heur(node)<<" "<< (int) node.GetFieldState(6,7)<<" " <<(int) node.GetFieldState(7,7) << "\n";
-				return heur(node);
+			generator->SetCurrentState(node->state);
+			if (!generator->HasNextState() || depth==0) {
+				RefreshParent(heur(node->state), node);
+				return;
 			}
 
-			if (maximizingPlayer) {
-				return MinMaxRecursive(depth, maximizingPlayer, generator, -std::numeric_limits<double>::max(), max);
-			}
-			else {
-				return MinMaxRecursive(depth, maximizingPlayer, generator, std::numeric_limits<double>::max(), min);
+			MinMaxRecursive(node, maximizingPlayer, generator, depth);
+		}
+
+		void RefreshParent(double val, std::shared_ptr<MinMaxNode> node)
+		{
+			while(auto parent = node->parent.lock())
+			{
+				auto copy = parent->value;
+				if (parent->maximizing)
+					parent->value = max(parent->value, val);
+				else parent->value = min(parent->value, val);
+				if (copy == parent->value)
+					break;
+				node = parent;
 			}
 		}
-		double MinMaxRecursive(unsigned depth, bool maximizingPlayer, std::shared_ptr<StateGenerator> generator, double bestValue, std::function<double(double, double)> selector)
+
+		void MinMaxRecursive(std::shared_ptr<MinMaxNode> node, bool maximizingPlayer, std::shared_ptr<StateGenerator> generator, unsigned depth)
 		{
 			std::mutex mutex;
 			auto nextStates = generator->GetAllNextStates();
 			/*executor->ForEach<BoardState>(
-				[&](BoardState& child)*/
-			for(auto child: nextStates){
-					auto v = minimax(child, depth - 1, !maximizingPlayer);
+				[&](BoardState& child){*/
+			for (auto child : nextStates) {
+				auto next = std::make_shared<MinMaxNode>(child, !maximizingPlayer);
+				next->parent = node;
+				{
 					std::lock_guard<std::mutex> lock(mutex);
-					bestValue = selector(bestValue, v);
-			}/*, nextStates);*/
-			std::lock_guard<std::mutex> lock(*out);
-			std::clog << depth << (maximizingPlayer ? " my " : " him ") << " " << bestValue << "\n";
-			return bestValue;
+					node->children.push_back(next);
+				}
+				RefreshParent(heur(child), next);
+				minimax(node, !maximizingPlayer, depth-1);
+			}//, nextStates);
 		}
 
 		static double max(double a, double b)
