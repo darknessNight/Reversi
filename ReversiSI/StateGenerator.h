@@ -11,11 +11,13 @@ namespace SI::Reversi
 	public:
 		explicit StateGenerator(const MapState& state):currentState(state)
 		{
+			Reset();
 		}
 		StateGenerator()
 		{
 		}
-		~StateGenerator() = default;
+
+		virtual ~StateGenerator() = default;
 
 		//virtual std::vector<MapState> GetAllNextStates(const MapState& state) = 0;
 

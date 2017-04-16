@@ -19,7 +19,7 @@ namespace SI::Reversi
 			Empty,
 			Player1,
 			Player2,
-			Unknow
+			Unknown
 		};
 	public:
 		explicit MapStateMemoryOptimized(char bytes[bytesCount])
@@ -75,15 +75,31 @@ namespace SI::Reversi
 			bytes[byteIndex] = bytes[byteIndex] & mask;
 			bytes[byteIndex] = bytes[byteIndex] | value;
 		}
+		
+		bool operator==(const MapStateMemoryOptimized& other)
+		{
+			for (int i = 0; i < bytesCount; i++)
+			{
+				if (bytes[i] != other.bytes[i])
+					return false;
+			}
+			return true;
+		}
+
+		bool operator!=(const MapStateMemoryOptimized& other)
+		{
+			return !operator==(other);
+		}
 	};
 
 
 	class MapStateProcessingOptimized
 	{
 	public:
+		virtual ~MapStateProcessingOptimized() = default;
 		static const auto rowsCount = MapStateMemoryOptimized::rowsCount;
 		static const auto colsCount = MapStateMemoryOptimized::colsCount;
-	private:
+	protected:
 		static const auto bytesCount = rowsCount*colsCount;
 		unsigned char bytes[bytesCount];
 	public:
@@ -97,13 +113,14 @@ namespace SI::Reversi
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		MapStateProcessingOptimized(const MapStateMemoryOptimized & memoryOther)
+
+		explicit MapStateProcessingOptimized(const MapStateMemoryOptimized & memoryOther)
 		{
 			for(auto i=0;i<rowsCount;i++)
 			{
 				for (auto j = 0; j<colsCount; j++)
 				{
-					SetFieldState(i, j, memoryOther.GetFieldState(i, j));
+					MapStateProcessingOptimized::SetFieldState(i, j, memoryOther.GetFieldState(i, j));
 				}
 			}
 		}
@@ -129,18 +146,39 @@ namespace SI::Reversi
 			memcpy(this->bytes, other.bytes, bytesCount);
 			return *this;
 		}
-
-		State GetFieldState(unsigned x, unsigned y)const
+		
+		bool operator==(const MapStateProcessingOptimized& other)
 		{
-			auto flatIndex = x*rowsCount + y;
+			for (int i = 0; i < bytesCount; i++)
+			{
+				if (bytes[i] != other.bytes[i])
+					return false;
+			}
+			return true;
+		}
 
+		bool operator!=(const MapStateProcessingOptimized& other)
+		{
+			return !operator==(other);
+		}
+
+		virtual State GetFieldState(unsigned x, unsigned y)const
+		{
+			auto flatIndex = GetFlatIndex(x,y);
+			if (bytes[flatIndex] > State::Unknown)
+				return State::Unknown;
 			return static_cast<State>(bytes[flatIndex]);
 		}
 
-		void SetFieldState(unsigned x, unsigned y, State newState)
+		virtual void SetFieldState(unsigned x, unsigned y, State newState)
 		{
-			auto flatIndex = x*rowsCount + y;
+			auto flatIndex = GetFlatIndex(x, y);
 			bytes[flatIndex] = newState;
+		}
+
+	protected:
+		static unsigned GetFlatIndex(unsigned x, unsigned y){
+			return x*rowsCount + y;
 		}
 	};
 

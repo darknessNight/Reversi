@@ -37,7 +37,7 @@ namespace SI::Reversi {
 	private:
 		void IncrementPlayer()
 		{
-			currentPlayer = (MapState::State) (((currentPlayer + 1) % MapState::State::Unknow));
+			currentPlayer = (MapState::State) (((currentPlayer + 1) % MapState::State::Unknown));
 			if (currentPlayer == MapState::State::Empty)
 				currentPlayer = MapState::State::Player1;
 		}
