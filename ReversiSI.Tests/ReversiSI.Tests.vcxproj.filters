@@ -41,5 +41,8 @@
     <ClCompile Include="ParallelJobsTests.cpp">
       <Filter>IntegrationsTests</Filter>
     </ClCompile>
+    <ClCompile Include="MinMaxTests.cpp">
+      <Filter>IntegrationsTests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

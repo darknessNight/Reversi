@@ -162,6 +162,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MinMaxTests.cpp" />
     <ClCompile Include="ParallelJobsTests.cpp" />
     <ClCompile Include="SemaphoreTests.cpp" />
     <ClCompile Include="stdafx.cpp">

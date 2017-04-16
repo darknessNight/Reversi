@@ -35,5 +35,8 @@
     <ClInclude Include="Multithreading\ParallelJob.h">
       <Filter>Header Files\Multithreading</Filter>
     </ClInclude>
+    <ClInclude Include="MinMax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

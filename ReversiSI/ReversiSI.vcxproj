@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapState.h" />
+    <ClInclude Include="MinMax.h" />
     <ClInclude Include="Multithreading\ParallelJob.h" />
     <ClInclude Include="Multithreading\Semaphore.h" />
     <ClInclude Include="StateGenerator.h" />
