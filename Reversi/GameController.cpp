@@ -241,3 +241,21 @@ bool GameController::hasMove(PlayerColor color) {
 
 	return false;
 }
+
+
+void GameController::reset() {
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
+		}
+	}
+	this->gameBoard.setSquare(3, 3, PlayerColor::WhitePlayer);
+	this->gameBoard.setSquare(4, 4, PlayerColor::WhitePlayer);
+	this->gameBoard.setSquare(3, 4, PlayerColor::BlackPlayer);
+	this->gameBoard.setSquare(4, 3, PlayerColor::BlackPlayer);
+
+	communicate = L"Pocz¹tek gry. Czarne zaczynaj¹.";
+	this->handle->doDraw();
+
+	this->playerNumber = PlayerColor::BlackPlayer;
+}

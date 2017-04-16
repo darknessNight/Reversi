@@ -38,6 +38,11 @@ void GameWindow::start() {
 			if (event.type == sf::Event::GainedFocus) {
 				doDraw();
 			}
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::R && canClick) {
+					gameController.reset();
+				}
+			}
 		}
 
 		if (shouldRedrawWindow) {

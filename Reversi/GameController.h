@@ -15,6 +15,7 @@ public:
 	void closeMainLoop();
 	sf::String getCommunicate();
 	GameBoard getGameBoard();
+	void reset();
 private:
 	GameWindow* handle;
 	GameBoard gameBoard;
