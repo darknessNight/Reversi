@@ -26,4 +26,5 @@ private:
 	sf::String communicate;
 	void mainLoop();
 	bool checkIfMoveIsLegal(int x, int y, PlayerColor color);
+	void changeGameBoardState(int x, int y, PlayerColor color);
 };

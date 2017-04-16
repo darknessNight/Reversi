@@ -39,7 +39,7 @@ void GameController::mainLoop() {
 
 			if (checkIfMoveIsLegal(placedPawnLocationX, placedPawnLocationY, playerNumber)) {
 
-				this->gameBoard.setSquare(placedPawnLocationX, placedPawnLocationY, playerNumber);
+				changeGameBoardState(placedPawnLocationX, placedPawnLocationY, playerNumber);
 
 
 				if (playerNumber == PlayerColor::BlackPlayer) {
@@ -121,4 +121,50 @@ bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color) {
 	}
 
 	return false;
+}
+
+
+void GameController::changeGameBoardState(int x, int y, PlayerColor color) {
+
+	PlayerColor oppositColor;
+	if (color == PlayerColor::BlackPlayer) {
+		oppositColor = PlayerColor::WhitePlayer;
+	}
+	else {
+		oppositColor = PlayerColor::BlackPlayer;
+	}
+
+	bool metOppositColor = false;
+
+	gameBoard.setSquare(x, y, color);
+
+	for (int xchange = -1; xchange < 2; xchange++) {
+		for (int ychange = -1; ychange < 2; ychange++) {
+			int tempx = x, tempy = y;
+			metOppositColor = false;
+			while (tempx + xchange != 8 && tempx + xchange != -1 && tempy + ychange != 8 && tempy + ychange != -1) {
+				tempx += xchange;
+				tempy += ychange;
+				if (gameBoard.getSquare(tempx, tempy) == oppositColor) {
+					metOppositColor = true;
+				}
+				else if (gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField) {
+					break;
+				}
+				else if (gameBoard.getSquare(tempx, tempy) == color) {
+					if (metOppositColor) {
+						while (tempx - xchange != x || tempy - ychange != y) {
+							tempx -= xchange;
+							tempy -= ychange;
+							gameBoard.setSquare(tempx, tempy, color);
+						}
+						break;
+					}
+					else {
+						break;
+					}
+				}
+			}
+		}
+	}
 }
