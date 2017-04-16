@@ -32,9 +32,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MapState.cpp">
-      <Filter>UnitTests</Filter>
-    </ClCompile>
     <ClCompile Include="SemaphoreTests.cpp">
       <Filter>IntegrationsTests</Filter>
     </ClCompile>
@@ -42,7 +39,10 @@
       <Filter>IntegrationsTests</Filter>
     </ClCompile>
     <ClCompile Include="MinMaxTests.cpp">
-      <Filter>IntegrationsTests</Filter>
+      <Filter>UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardState.cpp">
+      <Filter>UnitTests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

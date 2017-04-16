@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "../ReversiSI/Multithreading/ParallelJob.h"
+#include "../ReversiSI/Multithreading/ParallelJobExecutor.h"
 #include <sstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -26,13 +26,13 @@ namespace SI::Reversi::Tests
 	public:
 		TEST_METHOD(GetCPUCountOfThreads_CheckReturnSomePositiveNumber)
 		{
-			auto result = ParallelJob::GetCPUNumberOfThreads();
+			auto result = ParallelJobExecutor::GetCPUNumberOfThreads();
 			Assert::AreNotEqual(0u, result);
 		}
 
 		TEST_METHOD(SetNumberOfThreads_CheckReturnCorrectNumber)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(8);
 			auto result = jobs.GetNumberOfThreads();
 			Assert::AreEqual(8u, result);
@@ -40,16 +40,16 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(SetNumberOfThreadsToMax_CheckReturnCorrectNumber)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(8);
 			auto result = jobs.GetNumberOfThreads();
-			auto expected = ParallelJob::GetCPUNumberOfThreads();
+			auto expected = ParallelJobExecutor::GetCPUNumberOfThreads();
 			Assert::AreEqual(expected, result);
 		}
 
 		TEST_METHOD(ForEach_HasOneThreadParallelJob_CheckDoActionForEachElement)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(1);
 			std::vector<int> elements = { 1,2,3,4,5,6,7,8,9,10 };
 			jobs.ForEach<int>([](int &el) { el++; }, elements);
@@ -58,7 +58,7 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(ForEach_HasTwoThreadParallelJobAndSleepAction_CheckDoActionForTwoElements)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(2);
 			std::vector<int> elements = { 1,2,3,4 };
 			
@@ -89,7 +89,7 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(ForEach_HasFourThreadParallelJobAndSleepAction_CheckDoActionForFourElements)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(4);
 			std::vector<int> elements = { 1,2,3,4 };
 
@@ -115,7 +115,7 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(GetFreeThreadCount_HasEmptyTwoThreadJob_CheckReturnTwo)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(2);
 			auto result = jobs.GetCountOfFreeThreads();
 			Assert::AreEqual(2u, result);
@@ -123,7 +123,7 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(GetFreeThreadCount_HasTwoThreadJobWithEndedTask_CheckReturnTwo)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(2);
 
 			std::vector<int> elements = { 1,2,3,4 };
@@ -139,7 +139,7 @@ namespace SI::Reversi::Tests
 
 		TEST_METHOD(ForEachDetach_HasFourThreadParallelJobAndSleepAction_CheckDoActionForFourElements)
 		{
-			ParallelJob jobs;
+			ParallelJobExecutor jobs;
 			jobs.SetNumberOfThreads(4);
 			std::vector<int> elements = { 1,2,3,4 };
 

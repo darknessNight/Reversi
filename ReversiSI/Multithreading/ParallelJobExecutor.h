@@ -5,7 +5,7 @@
 
 namespace darknessNight::Multithreading
 {
-	class ParallelJob
+	class ParallelJobExecutor
 	{
 		unsigned threadNumber;
 		Semaphore semaphore;
@@ -13,7 +13,7 @@ namespace darknessNight::Multithreading
 		std::list<std::shared_ptr<std::thread>> detachedThreads;
 		std::mutex threadsMutex;
 	public:
-		ParallelJob() : threadNumber(GetCPUNumberOfThreads() - 1), semaphore(threadNumber)
+		ParallelJobExecutor() : threadNumber(GetCPUNumberOfThreads() - 1), semaphore(threadNumber)
 		{
 		}
 

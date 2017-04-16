@@ -22,9 +22,9 @@
     <ClCompile Include="TestCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MapState.h" />
+    <ClInclude Include="BoardState.h" />
     <ClInclude Include="MinMax.h" />
-    <ClInclude Include="Multithreading\ParallelJob.h" />
+    <ClInclude Include="Multithreading\ParallelJobExecutor.h" />
     <ClInclude Include="Multithreading\Semaphore.h" />
     <ClInclude Include="StateGenerator.h" />
   </ItemGroup>

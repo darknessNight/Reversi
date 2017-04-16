@@ -3,7 +3,7 @@
 
 namespace SI::Reversi
 {
-	class MapStateMemoryOptimized
+	class BoardStateMemoryOptimized
 	{
 	public:
 		static const auto rowsCount = 8u;
@@ -22,32 +22,32 @@ namespace SI::Reversi
 			Unknown
 		};
 	public:
-		explicit MapStateMemoryOptimized(char bytes[bytesCount])
+		explicit BoardStateMemoryOptimized(char bytes[bytesCount])
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		explicit MapStateMemoryOptimized(int* bytes)
+		explicit BoardStateMemoryOptimized(int* bytes)
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		MapStateMemoryOptimized(const MapStateMemoryOptimized& other)
+		BoardStateMemoryOptimized(const BoardStateMemoryOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapStateMemoryOptimized(const MapStateMemoryOptimized&& other) noexcept
+		BoardStateMemoryOptimized(const BoardStateMemoryOptimized&& other) noexcept
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapStateMemoryOptimized()
+		BoardStateMemoryOptimized()
 		{
 			memset(bytes, 0, bytesCount);
 		}
-		MapStateMemoryOptimized& operator=(const MapStateMemoryOptimized& other)
+		BoardStateMemoryOptimized& operator=(const BoardStateMemoryOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 			return *this;
 		}
-		MapStateMemoryOptimized& operator=(const MapStateMemoryOptimized&& other)
+		BoardStateMemoryOptimized& operator=(const BoardStateMemoryOptimized&& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 			return *this;
@@ -76,7 +76,7 @@ namespace SI::Reversi
 			bytes[byteIndex] = bytes[byteIndex] | value;
 		}
 		
-		bool operator==(const MapStateMemoryOptimized& other)
+		bool operator==(const BoardStateMemoryOptimized& other) const
 		{
 			for (int i = 0; i < bytesCount; i++)
 			{
@@ -86,68 +86,68 @@ namespace SI::Reversi
 			return true;
 		}
 
-		bool operator!=(const MapStateMemoryOptimized& other)
+		bool operator!=(const BoardStateMemoryOptimized& other) const
 		{
 			return !operator==(other);
 		}
 	};
 
 
-	class MapStateProcessingOptimized
+	class BoardStateProcessingOptimized
 	{
 	public:
-		virtual ~MapStateProcessingOptimized() = default;
-		static const auto rowsCount = MapStateMemoryOptimized::rowsCount;
-		static const auto colsCount = MapStateMemoryOptimized::colsCount;
+		virtual ~BoardStateProcessingOptimized() = default;
+		static const auto rowsCount = BoardStateMemoryOptimized::rowsCount;
+		static const auto colsCount = BoardStateMemoryOptimized::colsCount;
 	protected:
 		static const auto bytesCount = rowsCount*colsCount;
 		unsigned char bytes[bytesCount];
 	public:
-		typedef MapStateMemoryOptimized::State State;
+		typedef BoardStateMemoryOptimized::State FieldState;
 	public:
-		explicit MapStateProcessingOptimized(char bytes[bytesCount])
+		explicit BoardStateProcessingOptimized(char bytes[bytesCount])
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
-		explicit MapStateProcessingOptimized(int* bytes)
+		explicit BoardStateProcessingOptimized(int* bytes)
 		{
 			memcpy(this->bytes, bytes, bytesCount);
 		}
 
-		explicit MapStateProcessingOptimized(const MapStateMemoryOptimized & memoryOther)
+		explicit BoardStateProcessingOptimized(const BoardStateMemoryOptimized & memoryOther)
 		{
 			for(auto i=0;i<rowsCount;i++)
 			{
 				for (auto j = 0; j<colsCount; j++)
 				{
-					MapStateProcessingOptimized::SetFieldState(i, j, memoryOther.GetFieldState(i, j));
+					BoardStateProcessingOptimized::SetFieldState(i, j, memoryOther.GetFieldState(i, j));
 				}
 			}
 		}
-		MapStateProcessingOptimized(const MapStateProcessingOptimized& other)
+		BoardStateProcessingOptimized(const BoardStateProcessingOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapStateProcessingOptimized(const MapStateProcessingOptimized&& other) noexcept
+		BoardStateProcessingOptimized(const BoardStateProcessingOptimized&& other) noexcept
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 		}
-		MapStateProcessingOptimized()
+		BoardStateProcessingOptimized()
 		{
 			memset(bytes, 0, bytesCount);
 		}
-		MapStateProcessingOptimized& operator=(const MapStateProcessingOptimized& other)
+		BoardStateProcessingOptimized& operator=(const BoardStateProcessingOptimized& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 			return *this;
 		}
-		MapStateProcessingOptimized& operator=(const MapStateProcessingOptimized&& other)
+		BoardStateProcessingOptimized& operator=(const BoardStateProcessingOptimized&& other)
 		{
 			memcpy(this->bytes, other.bytes, bytesCount);
 			return *this;
 		}
 		
-		bool operator==(const MapStateProcessingOptimized& other)
+		bool operator==(const BoardStateProcessingOptimized& other) const
 		{
 			for (int i = 0; i < bytesCount; i++)
 			{
@@ -157,20 +157,20 @@ namespace SI::Reversi
 			return true;
 		}
 
-		bool operator!=(const MapStateProcessingOptimized& other)
+		bool operator!=(const BoardStateProcessingOptimized& other) const
 		{
 			return !operator==(other);
 		}
 
-		virtual State GetFieldState(unsigned x, unsigned y)const
+		virtual FieldState GetFieldState(unsigned x, unsigned y)const
 		{
 			auto flatIndex = GetFlatIndex(x,y);
-			if (bytes[flatIndex] > State::Unknown)
-				return State::Unknown;
-			return static_cast<State>(bytes[flatIndex]);
+			if (bytes[flatIndex] > FieldState::Unknown)
+				return FieldState::Unknown;
+			return static_cast<FieldState>(bytes[flatIndex]);
 		}
 
-		virtual void SetFieldState(unsigned x, unsigned y, State newState)
+		virtual void SetFieldState(unsigned x, unsigned y, FieldState newState)
 		{
 			auto flatIndex = GetFlatIndex(x, y);
 			bytes[flatIndex] = newState;
@@ -183,8 +183,8 @@ namespace SI::Reversi
 	};
 
 #ifdef _MEMORY_OPTIMIZED
-	typedef MapStateMemoryOptimized MapState;
+	typedef BoardStateMemoryOptimized BoardState;
 #else
-	typedef MapStateProcessingOptimized MapState;
+	typedef BoardStateProcessingOptimized BoardState;
 #endif
 }

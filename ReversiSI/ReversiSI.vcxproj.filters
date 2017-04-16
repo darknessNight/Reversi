@@ -23,19 +23,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MapState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StateGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Multithreading\Semaphore.h">
       <Filter>Header Files\Multithreading</Filter>
     </ClInclude>
-    <ClInclude Include="Multithreading\ParallelJob.h">
+    <ClInclude Include="MinMax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Multithreading\ParallelJobExecutor.h">
       <Filter>Header Files\Multithreading</Filter>
     </ClInclude>
-    <ClInclude Include="MinMax.h">
+    <ClInclude Include="BoardState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
