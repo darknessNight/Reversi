@@ -44,11 +44,17 @@ void GameController::mainLoop() {
 
 				if (playerNumber == PlayerColor::BlackPlayer) {
 					playerNumber = PlayerColor::WhitePlayer;
-					communicate = L"Ruch bia쿮go.";
+					communicate = L"Ruch bia쿮go. Czarne:";
+					communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+					communicate += L" Bia쿮:";
+					communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 				}
 				else {
 					playerNumber = PlayerColor::BlackPlayer;
-					communicate = L"Ruch czarnego.";
+					communicate = L"Ruch czarnego. Czarne:";
+					communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+					communicate += L" Bia쿮:";
+					communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 				}
 
 				
@@ -167,4 +173,19 @@ void GameController::changeGameBoardState(int x, int y, PlayerColor color) {
 			}
 		}
 	}
+}
+
+
+int GameController::countPawns(PlayerColor color) {
+	int counter = 0;
+
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			if (gameBoard.getSquare(x, y) == color) {
+				counter++;
+			}
+		}
+	}
+
+	return counter;
 }

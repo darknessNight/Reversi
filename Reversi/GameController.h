@@ -27,4 +27,5 @@ private:
 	void mainLoop();
 	bool checkIfMoveIsLegal(int x, int y, PlayerColor color);
 	void changeGameBoardState(int x, int y, PlayerColor color);
+	int countPawns(PlayerColor color);
 };
