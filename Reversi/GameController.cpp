@@ -34,6 +34,8 @@ void GameController::pawnPlaced(int x, int y) {
 
 
 void GameController::mainLoop() {
+	PlayerColor oppsitePlayer;
+
 	while(continueLoop) {
 		if (pawnWasPlaced) {
 
@@ -41,29 +43,66 @@ void GameController::mainLoop() {
 
 				changeGameBoardState(placedPawnLocationX, placedPawnLocationY, playerNumber);
 
-
 				if (playerNumber == PlayerColor::BlackPlayer) {
-					playerNumber = PlayerColor::WhitePlayer;
-					communicate = L"Ruch bia³ego. Czarne:";
-					communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
-					communicate += L" Bia³e:";
-					communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+					oppsitePlayer = PlayerColor::WhitePlayer;
 				}
 				else {
-					playerNumber = PlayerColor::BlackPlayer;
-					communicate = L"Ruch czarnego. Czarne:";
-					communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
-					communicate += L" Bia³e:";
-					communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+					oppsitePlayer = PlayerColor::BlackPlayer;
 				}
 
+				if (hasMove(oppsitePlayer)) {//kolejny gracz mo¿e wykonaæ ruch
+					if (playerNumber == PlayerColor::BlackPlayer) {//teraz gra bia³y
+						playerNumber = PlayerColor::WhitePlayer;
+						communicate = L"Ruch bia³ego. Czarne:";
+						communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+						communicate += L" Bia³e:";
+						communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+					}
+					else {//teraz gra czarny
+						playerNumber = PlayerColor::BlackPlayer;
+						communicate = L"Ruch czarnego. Czarne:";
+						communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+						communicate += L" Bia³e:";
+						communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+					}
+				}
+				else {
+					if (hasMove(playerNumber)) {//kolejny gracz straci³ ruch, jeszcze raz ten sam
+						if (playerNumber == PlayerColor::BlackPlayer) {//znowu czarny
+							communicate = L"Bia³y traci ruch. Ruch czarnego. Czarne:";
+							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+							communicate += L" Bia³e:";
+							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+						}
+						else {//znowu bia³y
+							communicate = L"Czarny traci ruch. Ruch bia³ego. Czarne:";
+							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+							communicate += L" Bia³e:";
+							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+						}
+					}
+					else{//koniec gry
+						if (countPawns(PlayerColor::BlackPlayer) > countPawns(PlayerColor::WhitePlayer)) {//wygra³ czarny
+							communicate = L"Wygra³ czarny gracz. Czarne:";
+							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+							communicate += L" Bia³e:";
+							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+						}
+						else {//wygra³ bia³y
+							communicate = L"Wygra³ bia³y gracz. Czarne:";
+							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+							communicate += L" Bia³e:";
+							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+						}
+					}
+				}
 				
 				this->handle->doDraw();
 			}
 
-			pawnWasPlaced = false;
-
 			this->handle->allowToClick();
+
+			pawnWasPlaced = false;
 		}
 		_sleep(100);
 	}
@@ -188,4 +227,17 @@ int GameController::countPawns(PlayerColor color) {
 	}
 
 	return counter;
+}
+
+
+bool GameController::hasMove(PlayerColor color) {
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			if (checkIfMoveIsLegal(x, y, color)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
