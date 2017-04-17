@@ -9,7 +9,7 @@ namespace SI::Reversi
 	protected:
 		BoardState currentState;
 	public:
-		explicit StateGenerator(const BoardState& state):currentState(state)
+		explicit StateGenerator(const BoardState& state, BoardState::FieldState player):currentState(state)
 		{
 			Reset();
 		}
@@ -38,11 +38,6 @@ namespace SI::Reversi
 			return false;
 		}
 		virtual void Reset(){}
-
-		virtual void SetCurrentState(const BoardState&state) {
-			currentState = state;
-			Reset();
-		}
 
 		virtual BoardState GetCurrentState()
 		{

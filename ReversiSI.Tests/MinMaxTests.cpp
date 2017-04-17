@@ -125,7 +125,12 @@ namespace SI::Reversi::Tests
 			generated = 0;
 		}
 
-		std::shared_ptr<StateGenerator> MakeCopy()
+		virtual void SetCurrentState(const BoardState&state) {
+			currentState = state;
+			Reset();
+		}
+
+		std::shared_ptr<FakeStateGenerator> MakeCopy()
 		{
 			std::shared_ptr<FakeStateGenerator> ret = std::make_shared<FakeStateGenerator>(*this);
 			ret->mutex = std::make_shared<std::mutex>();
@@ -167,7 +172,7 @@ namespace SI::Reversi::Tests
 		{
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>();
 			auto minmax = GetObject();
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			auto func = [&]() {minmax.GetBestMove(); };
 
@@ -178,7 +183,7 @@ namespace SI::Reversi::Tests
 		{
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>();
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			auto func = [&]() {
 				minmax.SetOpponentMove(BoardState());
@@ -191,7 +196,7 @@ namespace SI::Reversi::Tests
 		{
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>();
 			auto minmax = GetObject();
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			auto func = [&]() {
 				minmax.SetOpponentMove(BoardState());
@@ -205,7 +210,7 @@ namespace SI::Reversi::Tests
 		{
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>();
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			auto func = [&]() {
 				minmax.GetBestMove();
@@ -220,7 +225,7 @@ namespace SI::Reversi::Tests
 			auto winning=GetWinning(BoardState::FieldState::Player1);
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 4, 1, winning);
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			auto result = minmax.GetBestMove();
 
@@ -244,7 +249,7 @@ namespace SI::Reversi::Tests
 			fakeGenerator->winningForFirsts = 125;
 
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			FakeBoardState result = minmax.GetBestMove();
 
@@ -261,7 +266,7 @@ namespace SI::Reversi::Tests
 			fakeGenerator->winningForFirsts = 125;
 
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 			
 			FakeBoardState result = minmax.GetBestMove();
 
@@ -278,7 +283,7 @@ namespace SI::Reversi::Tests
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>(0, 0, 0, 4, winning);
 
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			FakeBoardState result = minmax.GetBestMove();
 
@@ -291,7 +296,7 @@ namespace SI::Reversi::Tests
 			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 0, 2, winning);
 
 			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
-			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+			minmax.SetStatesGenerator([&](const BoardState& state, BoardState::FieldState) { auto result = fakeGenerator->MakeCopy(); result->SetCurrentState(state); return result; });
 
 			FakeBoardState result = minmax.GetBestMove();
 
