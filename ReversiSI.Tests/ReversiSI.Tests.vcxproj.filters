@@ -32,7 +32,16 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MapState.cpp">
+    <ClCompile Include="SemaphoreTests.cpp">
+      <Filter>IntegrationsTests</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallelJobsTests.cpp">
+      <Filter>IntegrationsTests</Filter>
+    </ClCompile>
+    <ClCompile Include="MinMaxTests.cpp">
+      <Filter>UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardState.cpp">
       <Filter>UnitTests</Filter>
     </ClCompile>
     <ClCompile Include="StateGenerator.cpp">

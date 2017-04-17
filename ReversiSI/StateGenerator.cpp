@@ -1,5 +1,5 @@
 #include "StateGenerator.h"
-#include "MapState.h"
+#include "BoardState.h"
 #include <vector>
 
 using namespace SI::Reversi;
@@ -20,7 +20,7 @@ using namespace SI::Reversi;
 */
 
 
-std::vector<MapState> SI::Reversi::StateGenerator::GetAllNextStates(const MapState & state, const MapState::State nextPlayerState)
+std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState)
 {
 	Reset();
 
@@ -30,13 +30,13 @@ std::vector<MapState> SI::Reversi::StateGenerator::GetAllNextStates(const MapSta
 	getAvaliableStatesForGivenField();
 	generateNewStatesBasedOnFoundPoints();
 
-	return std::vector<MapState>(*this->nextMapStates);
+	return std::vector<BoardState>(*this->nextMapStates);
 }
 
 void SI::Reversi::StateGenerator::emptyAllVectors()
 {
 	if (this->nextMapStates == nullptr)
-		this->nextMapStates = new std::vector<MapState>();
+		this->nextMapStates = new std::vector<BoardState>();
 	else
 		this->nextMapStates->empty();
 	if (this->foundFields == nullptr)
@@ -49,7 +49,7 @@ void SI::Reversi::StateGenerator::emptyAllVectors()
 
 void SI::Reversi::StateGenerator::getAvaliableStatesForGivenField()
 {
-	MapState::State currentFieldsPlayer;
+	BoardStateMemoryOptimized::State currentFieldsPlayer;
 	for (int i = 0; i <this->currentState.rowsCount; i++) {
 		for (int j = 0; j < this->currentState.colsCount; j++)
 		{
@@ -69,8 +69,8 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
-	MapState::State fieldState;
-	if (this->currentState.GetFieldState(x - 1, y) != MapState::State::Empty)
+	BoardStateMemoryOptimized::State fieldState;
+	if (this->currentState.GetFieldState(x - 1, y) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = x - 1; i > 0; i--) {
 			fieldState = this->currentState.GetFieldState(i, y);
@@ -83,9 +83,9 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x + 1, y) != MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y) != BoardStateMemoryOptimized::State::Empty)
 	{
-		for (unsigned int i = x + 1; i < MapState::rowsCount; i++) {
+		for (unsigned int i = x + 1; i < BoardState::rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(i, y);
 			if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
 				foundFields->push_back({ i, y, x, y, LineDirection::East });
@@ -100,8 +100,8 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
-	MapState::State fieldState;
-	if (this->currentState.GetFieldState(x, y-1) != MapState::State::Empty)
+	BoardStateMemoryOptimized::State fieldState;
+	if (this->currentState.GetFieldState(x, y-1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = y - 1; i > 0; i--) {
 			fieldState = this->currentState.GetFieldState(x, i);
@@ -114,7 +114,7 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x, y + 1) != MapState::State::Empty)
+	if (this->currentState.GetFieldState(x, y + 1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = y + 1; i < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x, i);
@@ -131,8 +131,8 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
-	MapState::State fieldState;
-	if (this->currentState.GetFieldState(x - 1, y - 1) != MapState::State::Empty)
+	BoardStateMemoryOptimized::State fieldState;
+	if (this->currentState.GetFieldState(x - 1, y - 1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = 1; (x - i) > 0 && (y - i) > 0; i++) {
 			fieldState = this->currentState.GetFieldState(x - i, y - i);
@@ -145,7 +145,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x + 1, y + 1) != MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y + 1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = 1; x + i < this->currentState.colsCount && y + i < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x + i, y + i);
@@ -162,8 +162,8 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
-	MapState::State fieldState;
-	if (this->currentState.GetFieldState(x - 1, y + 1) != MapState::State::Empty)
+	BoardStateMemoryOptimized::State fieldState;
+	if (this->currentState.GetFieldState(x - 1, y + 1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = 1; (x - i) > 0 && (y + i) < this->currentState.rowsCount; i++) {
 			fieldState = this->currentState.GetFieldState(x - i, y - i);
@@ -176,7 +176,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
-	if (this->currentState.GetFieldState(x + 1, y - 1) != MapState::State::Empty)
+	if (this->currentState.GetFieldState(x + 1, y - 1) != BoardStateMemoryOptimized::State::Empty)
 	{
 		for (unsigned int i = 1; (x + i) < this->currentState.colsCount && (y - i) > 0; i++) {
 			fieldState = this->currentState.GetFieldState(x + i, y - i);
@@ -189,10 +189,10 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 	return;
 }
 
-bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(MapState::State fieldState, 
+bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, 
 	bool* opponentPieceFound, bool* ownPieceFound)
 {
-	if (fieldState != this->nextPlayer && fieldState != MapState::State::Empty && !*opponentPieceFound) {
+	if (fieldState != this->nextPlayer && fieldState != BoardStateMemoryOptimized::State::Empty && !*opponentPieceFound) {
 		*opponentPieceFound = true;
 	}
 	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
@@ -201,7 +201,7 @@ bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(MapState::State f
 	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
 		return false;
 	}
-	else if (fieldState == MapState::State::Empty && *opponentPieceFound && !*ownPieceFound) {
+	else if (fieldState == BoardStateMemoryOptimized::State::Empty && *opponentPieceFound && !*ownPieceFound) {
 		return true;
 	}
 	return false;
@@ -209,12 +209,12 @@ bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(MapState::State f
 
 void SI::Reversi::StateGenerator::generateNewStatesBasedOnFoundPoints()
 {
-	for (int i = 0; i < foundFields->size(); i++) {
+	for (unsigned int i = 0; i < foundFields->size(); i++) {
 		
 		int xDifference = abs(foundFields->at(i).currX - foundFields->at(i).newX);
 		int yDifference = abs(foundFields->at(i).currY - foundFields->at(i).newY);
 		if (validateMove(xDifference, yDifference)) {
-			this->nextMapStates->push_back(MapState(this->currentState));
+			this->nextMapStates->push_back(BoardState(this->currentState));
 			setNewFieldState(i);
 		}
 	}
@@ -227,7 +227,7 @@ void SI::Reversi::StateGenerator::setNewFieldState(int i)
 
 	unsigned int incrementX, incrementY, x, y, xDifference, yDifference;
 	
-	for (int k = 0; k < fieldsWithSameDestination.size(); k++) 
+	for (unsigned int k = 0; k < fieldsWithSameDestination.size(); k++)
 	{
 		currentFields = fieldsWithSameDestination.at(k);
 		xDifference = abs(currentFields.currX - currentFields.newX);
@@ -301,7 +301,7 @@ void SI::Reversi::StateGenerator::setIncrementalValuesAccordingToDirection(unsig
 std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveDuplicates(PossibleAndCurrentFields currentFields)
 {
 	std::vector<PossibleAndCurrentFields> Duplicates = std::vector<PossibleAndCurrentFields>();
-	for (int i = 0; i < foundFields->size(); i++) 
+	for (unsigned int i = 0; i < foundFields->size(); i++)
 	{
 		if (foundFields->at(i).newX == currentFields.newX && foundFields->at(i).newY == currentFields.newY) 
 		{
@@ -321,7 +321,7 @@ void SI::Reversi::StateGenerator::removeFromFoundFields(unsigned int i)
 
 }
 
-MapState SI::Reversi::StateGenerator::GetNextState()
+BoardState SI::Reversi::StateGenerator::GetNextState()
 {
 	return this->nextMapStates->at(this->currentStateIndex++);
 }

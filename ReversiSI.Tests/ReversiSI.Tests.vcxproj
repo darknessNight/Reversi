@@ -22,7 +22,7 @@
     <ProjectGuid>{A442171E-6896-4C10-BE9C-7C088939A80A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ReversiSITests</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -162,14 +162,20 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClCompile Include="StateGenerator.cpp" />
+=======
+    <ClCompile Include="MinMaxTests.cpp" />
+    <ClCompile Include="ParallelJobsTests.cpp" />
+    <ClCompile Include="SemaphoreTests.cpp" />
+>>>>>>> taskPawel-MinMax
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="MapState.cpp" />
+    <ClCompile Include="BoardState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReversiSI\ReversiSI.vcxproj">

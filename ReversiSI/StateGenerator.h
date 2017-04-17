@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
-#include "MapState.h"
+#include "BoardState.h"
 
 namespace SI::Reversi
 {
+
 	enum LineDirection {
 		North, NorthEast,
 		East, SouthEast,
@@ -29,24 +30,24 @@ namespace SI::Reversi
 	class StateGenerator
 	{
 	protected:
-		MapState currentState;
-		MapState::State nextPlayer;
+		BoardState currentState;
+		BoardStateMemoryOptimized::State nextPlayer;
 
 		unsigned int currentStateIndex;
 
 		std::vector<PossibleAndCurrentFields>* foundFields = nullptr;
-		std::vector<MapState>* nextMapStates = nullptr;
+		std::vector<BoardState>* nextMapStates = nullptr;
 
 		void emptyAllVectors();
 		void getAvaliableStatesForGivenField();
 
-		
+
 		void checkHorizontalLine(unsigned int x, unsigned int y);
 		void checkVerticalLine(unsigned int x, unsigned int y);
 		void checkDiagonalLineNW_SE(unsigned int x, unsigned int y);
 		void checkDiagonalLineNE_SW(unsigned int x, unsigned int y);
-		
-		bool checkMovePossibillityOnField(MapState::State fieldState, bool* opponentPieceFound, bool* ownPieceFound);
+
+		bool checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, bool* opponentPieceFound, bool* ownPieceFound);
 
 		void generateNewStatesBasedOnFoundPoints();
 		void setNewFieldState(int i);
@@ -54,30 +55,20 @@ namespace SI::Reversi
 		void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
 		std::vector<PossibleAndCurrentFields> getAndRemoveDuplicates(PossibleAndCurrentFields currentFields);
 		void removeFromFoundFields(unsigned int i);
-		
+
 	public:
-		explicit StateGenerator(const MapState& state, const MapState::State nextPlayerState)
+		explicit StateGenerator(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState)
 			:currentState(state), nextPlayer(nextPlayerState)
 		{}
 		~StateGenerator() = default;
 	public:
 
 
-		std::vector<MapState> GetAllNextStates(const MapState& state, const MapState::State nextPlayerState);
+		std::vector<BoardState> GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState);
 
-		virtual MapState GetNextState();
+		virtual BoardState GetNextState();
 		virtual bool HasNextState();
 		virtual void Reset();
-
-		virtual void SetCurrentState(const MapState&state)
-		{
-			currentState = state;
-		}
-
-		virtual MapState GetCurrentState()
-		{
-			return currentState;
-		}
 
 		static int abs(int a) {
 			if (a >= 0)	return a;
@@ -88,6 +79,57 @@ namespace SI::Reversi
 				return a;
 			else
 				return b;
+		}
+
+		virtual void SetCurrentState(const BoardState& state)
+		{
+
+			class StateGenerator
+			{
+			protected:
+				BoardState currentState;
+			public:
+				explicit StateGenerator(const BoardState& state) :currentState(state)
+				{
+					Reset();
+				}
+				StateGenerator()
+				{
+				}
+
+				virtual ~StateGenerator() = default;
+
+				virtual std::vector<BoardState> GetAllNextStates()
+				{
+					std::vector<BoardState> result;
+					while (HasNextState())
+					{
+						result.push_back(GetNextState());
+					}
+					return result;
+				}
+
+				virtual BoardState GetNextState()
+				{
+					return BoardState();
+				}
+				virtual bool HasNextState()
+				{
+					return false;
+				}
+				virtual void Reset() {}
+
+				virtual void SetCurrentState(const BoardState&state) {
+
+					currentState = state;
+					Reset();
+				}
+
+				virtual BoardState GetCurrentState()
+				{
+					return currentState;
+				}
+			};
 		}
 	};
 }
