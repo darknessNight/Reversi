@@ -18,15 +18,26 @@ namespace SI::Reversi {
 			BoardState state;
 			std::weak_ptr<MinMaxNode> parent;
 			std::vector<std::shared_ptr<MinMaxNode>> children;
+			bool root = false;
 
 			MinMaxNode(const BoardState& state, bool maximizing = false)
-				:value(maximizing ? -1 : 1 * std::numeric_limits<double>::max()), maximizing(maximizing), state(state)
+				:value((maximizing ? -1 : 1) * std::numeric_limits<double>::max()), maximizing(maximizing), state(state)
 			{}
 
 			MinMaxNode(const MinMaxNode& other)
 				:maximizing(other.maximizing),state(other.state),parent(other.parent),children(other.children)
 			{
 				value = static_cast<double>(other.value);
+			}
+
+			void SetAsRoot()
+			{
+				root = true;
+			}
+
+			bool IsRoot() const
+			{
+				return root;
 			}
 
 			MinMaxNode& operator=(const MinMaxNode& other){
@@ -56,6 +67,8 @@ namespace SI::Reversi {
 				siPlayer(siPlayer), heur(aprox), generatorFabric([]() {return std::make_shared<StateGenerator>(); }),
 				minimumDepth(minDepth), executor(std::make_shared<ParallelJobExecutor>())
 		{
+			currentState->SetAsRoot();
+
 			file.open("D:\\desktop\\CLog.log", std::ios::out);
 			if (file.good())
 				std::clog.set_rdbuf(file.rdbuf());
@@ -114,7 +127,7 @@ namespace SI::Reversi {
 			}
 
 
-			double bestValue = -std::numeric_limits<double>::max();
+			auto bestValue = -std::numeric_limits<double>::max();
 			auto bestState = currentState;
 			for(auto el:currentState->children)
 			{
@@ -126,6 +139,7 @@ namespace SI::Reversi {
 			}
 
 			currentState = bestState;
+			currentState->SetAsRoot();
 			return bestState->state;
 		}
 
@@ -133,6 +147,9 @@ namespace SI::Reversi {
 		{
 			auto generator = generatorFabric();
 			generator->SetCurrentState(node->state);
+
+			if (node->parent.expired() && !node->IsRoot())
+				return;
 
 			if (!generator->HasNextState()) {
 				std::lock_guard<std::mutex> lock(mutex);
@@ -154,7 +171,7 @@ namespace SI::Reversi {
 			}
 		}
 
-		void RefreshParent(std::shared_ptr<MinMaxNode> node)
+		void RefreshParent(std::shared_ptr<MinMaxNode> node) const
 		{
 			auto val = heur(node->state);
 			node->value = val;
@@ -190,12 +207,23 @@ namespace SI::Reversi {
 			if (currentPlayer == siPlayer)
 				throw std::exception("It's move of SI");
 			IncrementPlayer();
+
+			for (auto el : currentState->children)
+			{
+				if (el->state==opponentMove)
+				{
+					currentState = el;
+					currentState->SetAsRoot();
+					return;
+				}
+			}
+			std::exception("Undefined move");			
 		}
 
 	private:
 		void IncrementPlayer()
 		{
-			currentPlayer = (BoardState::FieldState) (((currentPlayer + 1) % BoardState::FieldState::Unknown));
+			currentPlayer = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
 			if (currentPlayer == BoardState::FieldState::Empty)
 				currentPlayer = BoardState::FieldState::Player1;
 		}
