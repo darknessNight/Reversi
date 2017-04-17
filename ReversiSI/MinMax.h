@@ -1,10 +1,11 @@
 ﻿#pragma once
 #include "StateGenerator.h"
 #include "Multithreading/ParallelJobExecutor.h"
+#include "MemoryUsageGuard.h"
 #include <functional>
-#include <iostream>
-#include <fstream>
 #include <atomic>
+#undef max
+#undef min
 
 using darknessNight::Multithreading::ParallelJobExecutor;
 
@@ -61,6 +62,7 @@ namespace SI::Reversi {
 		std::shared_ptr<std::shared_mutex> currentStateMutex = std::make_shared<std::shared_mutex>();
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
+		darknessNight::MemoryUsageGuard memoryGuard;
 
 	public:
 		MinMax(BoardState startState, BoardState::FieldState siPlayer, unsigned minDepth, std::function<double(const BoardState&)> aprox)
@@ -74,6 +76,7 @@ namespace SI::Reversi {
 
 		~MinMax()
 		{
+			currentState = nullptr;
 			working = false;
 			if (algorithmThread->joinable())
 				algorithmThread->join();
@@ -164,6 +167,7 @@ namespace SI::Reversi {
 			
 			for(auto el: nexts)
 			{
+				memoryGuard.WaitForAvailableMemeory();
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
@@ -210,7 +214,7 @@ namespace SI::Reversi {
 
 	public:
 
-		BoardState GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
+		void GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
 			std::thread th([&]() {callback(GetBestMove()); });
 			th.detach();
 		}

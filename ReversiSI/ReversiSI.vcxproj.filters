@@ -38,5 +38,8 @@
     <ClInclude Include="BoardState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryUsageGuard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
