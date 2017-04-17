@@ -271,5 +271,35 @@ namespace SI::Reversi::Tests
 
 			Assert::AreEqual<FakeBoardState>(expected, result);
 		}
+
+		TEST_METHOD(GetBestMove_HasGeneratorWithEmptyChildren_CheckReturnSameState)
+		{
+			auto winning = GetWinning(BoardState::FieldState::Player1);
+			auto fakeGenerator = std::make_shared<FakeStateGenerator>(0, 0, 0, 4, winning);
+
+			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
+			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+
+			FakeBoardState result = minmax.GetBestMove();
+
+			Assert::AreEqual<FakeBoardState>(GetStartState(), result);
+		}
+
+		TEST_METHOD(GetBestMove_HasGeneratorWithHNoWinningPossibility_CheckReturnZeros)
+		{
+			auto winning = GetWinning(BoardState::FieldState::Player2);
+			auto fakeGenerator = std::make_shared<FakeStateGenerator>(5, 5, 0, 2, winning);
+
+			auto minmax = GetObject(GetStartState(), BoardState::FieldState::Player1);
+			minmax.SetStatesGenerator([&]() { return fakeGenerator->MakeCopy(); });
+
+			FakeBoardState result = minmax.GetBestMove();
+
+			FakeBoardState expected = GetWinning(BoardState::FieldState::Empty);
+			expected.SetHiddenValue(7, 7, 12);
+			expected.SetHiddenValue(6, 7, 11);
+
+			Assert::AreEqual<FakeBoardState>(expected, result);
+		}
 	};
 }

@@ -140,7 +140,7 @@ namespace SI::Reversi
 		}
 		BoardStateProcessingOptimized()
 		{
-			memset(bytes, 0, bytesCount);
+			memset(bytes, 0, bytesCount*typeSize);
 		}
 		BoardStateProcessingOptimized& operator=(const BoardStateProcessingOptimized& other)
 		{
