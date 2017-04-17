@@ -58,8 +58,9 @@ namespace SI::Reversi {
 		unsigned minimumDepth;
 		unsigned currentDepth=1;
 		std::shared_ptr<ParallelJobExecutor> executor;
-		std::fstream file;
-		std::shared_ptr<std::mutex> out = std::make_shared<std::mutex>();
+		std::shared_ptr<std::shared_mutex> currentStateMutex = std::make_shared<std::shared_mutex>();
+		std::shared_ptr<std::thread> algorithmThread;
+		bool working = true;
 
 	public:
 		MinMax(BoardState startState, BoardState::FieldState siPlayer, unsigned minDepth, std::function<double(const BoardState&)> aprox)
@@ -68,10 +69,14 @@ namespace SI::Reversi {
 				minimumDepth(minDepth), executor(std::make_shared<ParallelJobExecutor>())
 		{
 			currentState->SetAsRoot();
+			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
+		}
 
-			file.open("D:\\desktop\\CLog.log", std::ios::out);
-			if (file.good())
-				std::clog.set_rdbuf(file.rdbuf());
+		~MinMax()
+		{
+			working = false;
+			if (algorithmThread->joinable())
+				algorithmThread->join();
 		}
 
 		void SetStatesGenerator(std::function<std::shared_ptr<StateGenerator>()> stateGeneratorFabric)
@@ -87,10 +92,27 @@ namespace SI::Reversi {
 		BoardState GetBestMove() {
 			auto generator = CheckAndPrepare();
 
-			if (!generator->HasNextState())
-				return currentState->state;
+			while(currentDepth<minimumDepth)
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(100));
+			}
 
-			return FindBestMove();
+			auto bestValue = -std::numeric_limits<double>::max();
+			auto bestState = currentState;
+			for (auto el : currentState->children)
+			{
+				if (bestValue<el->value)
+				{
+					bestState = el;
+					bestValue = el->value;
+				}
+			}
+
+			currentStateMutex->lock();
+			currentState = bestState;
+			currentState->SetAsRoot();
+			currentStateMutex->unlock();
+			return bestState->state;
 		}
 
 	protected:
@@ -105,7 +127,7 @@ namespace SI::Reversi {
 			return generator;
 		}
 
-		BoardState FindBestMove()
+		void FindBestMove()
 		{
 			std::vector<std::shared_ptr<MinMaxNode>> levels[2];
 			int parent = 0;
@@ -113,37 +135,23 @@ namespace SI::Reversi {
 			std::mutex mutex;
 			levels[parent].push_back(currentState);
 
-			while (currentDepth < minimumDepth) {
-
+			while (working) {
 				executor->ForEach<std::shared_ptr<MinMaxNode>>([&](std::shared_ptr<MinMaxNode>& next)
 				{
+					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
 					minmax(next, levels[child], mutex);
 				}, levels[parent]);
 
 				currentDepth++;
-				levels[parent].clear();
 				parent = (parent + 1) % 2;
 				child = (child + 1) % 2;
+
+				std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
+				levels[child].clear();
 			}
-
-
-			auto bestValue = -std::numeric_limits<double>::max();
-			auto bestState = currentState;
-			for(auto el:currentState->children)
-			{
-				if(bestValue<el->value)
-				{
-					bestState = el;
-					bestValue = el->value;
-				}
-			}
-
-			currentState = bestState;
-			currentState->SetAsRoot();
-			return bestState->state;
 		}
 
-		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex)
+		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
 		{
 			auto generator = generatorFabric();
 			generator->SetCurrentState(node->state);
@@ -200,7 +208,8 @@ namespace SI::Reversi {
 	public:
 
 		BoardState GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
-			return BoardState();
+			std::thread th([&]() {callback(GetBestMove()); });
+			th.detach();
 		}
 
 		void SetOpponentMove(const BoardState& opponentMove) {
@@ -208,6 +217,7 @@ namespace SI::Reversi {
 				throw std::exception("It's move of SI");
 			IncrementPlayer();
 
+			std::lock_guard<std::shared_mutex> lock(*currentStateMutex);
 			for (auto el : currentState->children)
 			{
 				if (el->state==opponentMove)
@@ -226,6 +236,11 @@ namespace SI::Reversi {
 			currentPlayer = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
 			if (currentPlayer == BoardState::FieldState::Empty)
 				currentPlayer = BoardState::FieldState::Player1;
+		}
+	public:
+		unsigned GetCurrentDepth() const
+		{
+			return currentDepth;
 		}
 	};
 }
