@@ -162,13 +162,10 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClCompile Include="StateGenerator.cpp" />
-=======
     <ClCompile Include="MinMaxTests.cpp" />
     <ClCompile Include="ParallelJobsTests.cpp" />
     <ClCompile Include="SemaphoreTests.cpp" />
->>>>>>> taskPawel-MinMax
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

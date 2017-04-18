@@ -5,30 +5,33 @@
 namespace SI::Reversi
 {
 
-	enum LineDirection {
-		North, NorthEast,
-		East, SouthEast,
-		South, SouthWest,
-		West, NorthWest
-	};
-
-	struct PossibleAndCurrentFields {
-		unsigned int newX;
-		unsigned int newY;
-		unsigned int currX;
-		unsigned int currY;
-		LineDirection direction;
-	};
-
-	struct FieldI {
-		unsigned int x;
-		unsigned int y;
-	};
+	
 
 	typedef int invalidMoveException;
 
 	class StateGenerator
 	{
+	public:
+		enum LineDirection {
+			North, NorthEast,
+			East, SouthEast,
+			South, SouthWest,
+			West, NorthWest
+		};
+
+		struct PossibleAndCurrentFields {
+			unsigned int newX;
+			unsigned int newY;
+			unsigned int currX;
+			unsigned int currY;
+			LineDirection direction;
+		};
+
+		struct FieldI {
+			unsigned int x;
+			unsigned int y;
+		};
+
 	protected:
 		BoardState currentState;
 		BoardStateMemoryOptimized::State nextPlayer;

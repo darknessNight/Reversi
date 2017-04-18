@@ -4,21 +4,6 @@
 
 using namespace SI::Reversi;
 
-//zak³adam, ¿e gracz, który wykonuje teraz ruch to nextPlayerState
-/*
-		|
-		|					x
-	----|------------------->
-		|				|
-		|				|
-		|				|
-		|				|
-		|_______________|
-		|
-	  y	\/
-
-*/
-
 
 std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState)
 {
@@ -305,9 +290,6 @@ std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveD
 	{
 		if (foundFields->at(i).newX == currentFields.newX && foundFields->at(i).newY == currentFields.newY) 
 		{
-			//if (i != 0 && foundFields->at(i).currX == currentFields.currX && foundFields->at(i).currY == currentFields.currY)
-				//return std::vector<PossibleAndCurrentFields>();
-			
 			Duplicates.push_back(foundFields->at(i));
 			if (Duplicates.size() > 1)
 				foundFields->erase(foundFields->begin() + i);
