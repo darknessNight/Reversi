@@ -10,5 +10,28 @@
     <ClInclude Include="Multithreading\ParallelJobExecutor.h" />
     <ClInclude Include="Multithreading\Semaphore.h" />
     <ClInclude Include="StateGenerator.h" />
+    <ClCompile Include="TestCpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="StateGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Multithreading\Semaphore.h">
+      <Filter>Header Files\Multithreading</Filter>
+    </ClInclude>
+    <ClInclude Include="MinMax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Multithreading\ParallelJobExecutor.h">
+      <Filter>Header Files\Multithreading</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryUsageGuard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
