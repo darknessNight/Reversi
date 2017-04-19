@@ -64,11 +64,10 @@ namespace SI::Reversi
 			:currentState(state), nextPlayer(nextPlayerState)
 		{}
 		~StateGenerator() = default;
-	public:
 
 
 		std::vector<BoardState> GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState);
-
+// zmieniono na std::vector<BoardState> GetAllNextStates(); musisz to uwzględnić
 		virtual BoardState GetNextState();
 		virtual bool HasNextState();
 		virtual void Reset();
@@ -76,7 +75,8 @@ namespace SI::Reversi
 		static int abs(int a) {
 			if (a >= 0)	return a;
 			else return -a;
-		}
+    }
+    
 		static unsigned int max(unsigned int a, unsigned int b) {
 			if (a > b)
 				return a;
@@ -84,55 +84,9 @@ namespace SI::Reversi
 				return b;
 		}
 
-		virtual void SetCurrentState(const BoardState& state)
-		{
-
-			class StateGenerator
-			{
-			protected:
-				BoardState currentState;
-			public:
-				explicit StateGenerator(const BoardState& state) :currentState(state)
-				{
-					Reset();
-				}
-				StateGenerator()
-				{
-				}
-
-				virtual ~StateGenerator() = default;
-
-				virtual std::vector<BoardState> GetAllNextStates()
-				{
-					std::vector<BoardState> result;
-					while (HasNextState())
-					{
-						result.push_back(GetNextState());
-					}
-					return result;
-				}
-
-				virtual BoardState GetNextState()
-				{
-					return BoardState();
-				}
-				virtual bool HasNextState()
-				{
-					return false;
-				}
-				virtual void Reset() {}
-
-				virtual void SetCurrentState(const BoardState&state) {
-
-					currentState = state;
-					Reset();
-				}
-
 				virtual BoardState GetCurrentState()
 				{
 					return currentState;
 				}
 			};
-		}
-	};
 }

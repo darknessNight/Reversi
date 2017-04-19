@@ -1,10 +1,11 @@
 ﻿#pragma once
 #include "StateGenerator.h"
 #include "Multithreading/ParallelJobExecutor.h"
+#include "MemoryUsageGuard.h"
 #include <functional>
-#include <iostream>
-#include <fstream>
 #include <atomic>
+#undef max
+#undef min
 
 using darknessNight::Multithreading::ParallelJobExecutor;
 
@@ -54,18 +55,19 @@ namespace SI::Reversi {
 		BoardState::FieldState siPlayer;
 		BoardState::FieldState currentPlayer = BoardState::FieldState::Player1;
 		std::function<double(const BoardState&)> heur;
-		std::function<std::shared_ptr<StateGenerator>()> generatorFabric;
+		std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> generatorFabric;
 		unsigned minimumDepth;
 		unsigned currentDepth=1;
 		std::shared_ptr<ParallelJobExecutor> executor;
 		std::shared_ptr<std::shared_mutex> currentStateMutex = std::make_shared<std::shared_mutex>();
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
+		darknessNight::MemoryUsageGuard memoryGuard;
 
 	public:
 		MinMax(BoardState startState, BoardState::FieldState siPlayer, unsigned minDepth, std::function<double(const BoardState&)> aprox)
 			: currentState(std::make_shared<MinMaxNode>(startState, siPlayer == BoardState::FieldState::Player1)), 
-				siPlayer(siPlayer), heur(aprox), generatorFabric([]() {return std::make_shared<StateGenerator>(); }),
+				siPlayer(siPlayer), heur(aprox), generatorFabric([](const BoardState& state, BoardState::FieldState player) {return std::make_shared<StateGenerator>(state,player); }),
 				minimumDepth(minDepth), executor(std::make_shared<ParallelJobExecutor>())
 		{
 			currentState->SetAsRoot();
@@ -74,12 +76,13 @@ namespace SI::Reversi {
 
 		~MinMax()
 		{
+			currentState = nullptr;
 			working = false;
 			if (algorithmThread->joinable())
 				algorithmThread->join();
 		}
 
-		void SetStatesGenerator(std::function<std::shared_ptr<StateGenerator>()> stateGeneratorFabric)
+		void SetStatesGenerator(std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> stateGeneratorFabric)
 		{
 			generatorFabric = stateGeneratorFabric;
 		}
@@ -90,7 +93,7 @@ namespace SI::Reversi {
 		}
 
 		BoardState GetBestMove() {
-			auto generator = CheckAndPrepare();
+			CheckAndPrepare();
 
 			while(currentDepth<minimumDepth)
 			{
@@ -116,15 +119,11 @@ namespace SI::Reversi {
 		}
 
 	protected:
-		std::shared_ptr<StateGenerator> CheckAndPrepare()
+		void CheckAndPrepare()
 		{
 			if (currentPlayer != siPlayer)
 				throw std::exception("It's no move of SI");
 			IncrementPlayer();
-
-			auto generator = generatorFabric();
-			generator->StateGenerator::SetCurrentState(currentState->state);
-			return generator;
 		}
 
 		void FindBestMove()
@@ -153,8 +152,7 @@ namespace SI::Reversi {
 
 		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
 		{
-			auto generator = generatorFabric();
-			generator->SetCurrentState(node->state);
+			auto generator = generatorFabric(node->state, node->maximizing?siPlayer:GetNotSiPlayer());
 
 			if (node->parent.expired() && !node->IsRoot())
 				return;
@@ -169,6 +167,7 @@ namespace SI::Reversi {
 			
 			for(auto el: nexts)
 			{
+				memoryGuard.WaitForAvailableMemeory();
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
@@ -177,6 +176,14 @@ namespace SI::Reversi {
 				mutex.unlock();
 				RefreshParent(child);
 			}
+		}
+
+		BoardState::FieldState GetNotSiPlayer() const
+		{
+			auto result = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
+			if (result == BoardState::FieldState::Empty)
+				result = BoardState::FieldState::Player1;
+			return result;
 		}
 
 		void RefreshParent(std::shared_ptr<MinMaxNode> node) const
@@ -207,7 +214,7 @@ namespace SI::Reversi {
 
 	public:
 
-		BoardState GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
+		void GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
 			std::thread th([&]() {callback(GetBestMove()); });
 			th.detach();
 		}
