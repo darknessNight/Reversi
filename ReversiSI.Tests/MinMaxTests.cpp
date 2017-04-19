@@ -92,6 +92,14 @@ namespace SI::Reversi::Tests
 			losing = states;
 		}
 
+		std::vector<BoardState> GetAllNextStates()
+		{
+			std::vector<BoardState> result;
+			while (HasNextState())
+				result.push_back(GetNextState());
+			return result;
+		}
+
 		BoardState GetNextState() override {
 			std::lock_guard<std::mutex> lock(*mutex);
 			FakeBoardState current = this->currentState;

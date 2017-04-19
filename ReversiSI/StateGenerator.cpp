@@ -8,7 +8,7 @@ using namespace SI::Reversi;
 std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates()
 {
 	Reset();
-
+	emptyAllVectors();
 	getAvaliableStatesForGivenField();
 	generateNewStatesBasedOnFoundPoints();
 
