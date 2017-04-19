@@ -283,7 +283,7 @@ void SI::Reversi::StateGenerator::setIncrementalValuesAccordingToDirection(unsig
 	}
 }
 
-std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveDuplicates(PossibleAndCurrentFields currentFields)
+std::vector<StateGenerator::PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveDuplicates(PossibleAndCurrentFields currentFields)
 {
 	std::vector<PossibleAndCurrentFields> Duplicates = std::vector<PossibleAndCurrentFields>();
 	for (unsigned int i = 0; i < foundFields->size(); i++)
@@ -298,18 +298,17 @@ std::vector<PossibleAndCurrentFields> SI::Reversi::StateGenerator::getAndRemoveD
 	return std::vector<PossibleAndCurrentFields>(Duplicates);
 }
 
-void SI::Reversi::StateGenerator::removeFromFoundFields(unsigned int i)
-{
-
-}
-
 BoardState SI::Reversi::StateGenerator::GetNextState()
 {
+	if (nextMapStates == nullptr)
+		return BoardState();
 	return this->nextMapStates->at(this->currentStateIndex++);
 }
 
 bool SI::Reversi::StateGenerator::HasNextState()
 {
+	if (nextMapStates == nullptr)
+		return false;
 	if (this->currentStateIndex < this->nextMapStates->size())
 		return true;
 	else

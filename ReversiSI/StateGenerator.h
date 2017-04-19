@@ -36,7 +36,7 @@ namespace SI::Reversi
 		BoardState currentState;
 		BoardStateMemoryOptimized::State nextPlayer;
 
-		unsigned int currentStateIndex;
+		unsigned int currentStateIndex = 0;
 
 		std::vector<PossibleAndCurrentFields>* foundFields = nullptr;
 		std::vector<BoardState>* nextMapStates = nullptr;
@@ -57,7 +57,6 @@ namespace SI::Reversi
 		bool validateMove(int xDifference, int yDifference);
 		void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
 		std::vector<PossibleAndCurrentFields> getAndRemoveDuplicates(PossibleAndCurrentFields currentFields);
-		void removeFromFoundFields(unsigned int i);
 
 	public:
 		explicit StateGenerator(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState)
