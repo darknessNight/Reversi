@@ -1,30 +1,45 @@
 #pragma once
 #include <vector>
-#include "MapState.h"
+#include "BoardState.h"
 
 namespace SI::Reversi
 {
-	class StateGenerator abstract
+	class StateGenerator
 	{
 	protected:
-		MapState currentState;
-	protected:
-		explicit StateGenerator(const MapState& state):currentState(state)
+		BoardState currentState;
+	public:
+		explicit StateGenerator(const BoardState& state, BoardState::FieldState player):currentState(state)
+		{
+			Reset();
+		}
+		StateGenerator()
 		{
 		}
-		~StateGenerator() = default;
-	public:
-		virtual std::vector<MapState> GetAllNextStates(const MapState& state) = 0;
 
-		virtual MapState GetNextState() = 0;
-		virtual bool HasNextState() = 0;
-		virtual void Reset()=0;
+		virtual ~StateGenerator() = default;
 
-		virtual void SetCurrentState(const MapState&state) {
-			currentState = state;
+		virtual std::vector<BoardState> GetAllNextStates()
+		{
+			std::vector<BoardState> result;
+			while(HasNextState())
+			{
+				result.push_back(GetNextState());
+			}
+			return result;
 		}
 
-		virtual MapState GetCurrentState()
+		virtual BoardState GetNextState()
+		{
+			return BoardState();
+		}
+		virtual bool HasNextState()
+		{
+			return false;
+		}
+		virtual void Reset(){}
+
+		virtual BoardState GetCurrentState()
 		{
 			return currentState;
 		}

@@ -4,7 +4,6 @@
 
 int main()
 {
-
 	GameWindow gameWindow;
 	gameWindow.start();
 

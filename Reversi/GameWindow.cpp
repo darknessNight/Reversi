@@ -1,5 +1,5 @@
 #include "GameWindow.h"
-
+#include "SiPlayer.h"
 
 void GameWindow::start() {
 
