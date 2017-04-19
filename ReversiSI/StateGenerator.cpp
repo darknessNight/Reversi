@@ -5,12 +5,9 @@
 using namespace SI::Reversi;
 
 
-std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState)
+std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates()
 {
 	Reset();
-
-	this->currentState = state;
-	this->nextPlayer = nextPlayerState;
 
 	getAvaliableStatesForGivenField();
 	generateNewStatesBasedOnFoundPoints();
@@ -301,14 +298,14 @@ std::vector<StateGenerator::PossibleAndCurrentFields> SI::Reversi::StateGenerato
 BoardState SI::Reversi::StateGenerator::GetNextState()
 {
 	if (nextMapStates == nullptr)
-		return BoardState();
+		this->GetAllNextStates(this->currentState, this->nextPlayer);
 	return this->nextMapStates->at(this->currentStateIndex++);
 }
 
 bool SI::Reversi::StateGenerator::HasNextState()
 {
 	if (nextMapStates == nullptr)
-		return false;
+		this->GetAllNextStates(this->currentState, this->nextPlayer);
 	if (this->currentStateIndex < this->nextMapStates->size())
 		return true;
 	else

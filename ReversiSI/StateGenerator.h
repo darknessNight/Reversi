@@ -4,11 +4,6 @@
 
 namespace SI::Reversi
 {
-
-	
-
-	typedef int invalidMoveException;
-
 	class StateGenerator
 	{
 	public:
@@ -65,7 +60,7 @@ namespace SI::Reversi
 		~StateGenerator() = default;
 
 
-		std::vector<BoardState> GetAllNextStates(const BoardState& state, const BoardStateMemoryOptimized::State nextPlayerState);
+		std::vector<BoardState> GetAllNextStates();
 // zmieniono na std::vector<BoardState> GetAllNextStates(); musisz to uwzględnić
 		virtual BoardState GetNextState();
 		virtual bool HasNextState();
