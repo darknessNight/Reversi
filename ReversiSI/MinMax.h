@@ -159,7 +159,9 @@ namespace SI::Reversi {
 
 			if (!generator->HasNextState()) {
 				std::lock_guard<std::mutex> lock(mutex);
-				children.push_back(node);
+				auto newNode = std::make_shared<MinMaxNode>(*node);
+				newNode->maximizing = !node->maximizing;
+				children.push_back(newNode);
 				return;
 			}
 
@@ -167,7 +169,7 @@ namespace SI::Reversi {
 			
 			for(auto el: nexts)
 			{
-				memoryGuard.WaitForAvailableMemeory();
+				memoryGuard.WaitForAvailableMemeory();//such method much optimized
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
@@ -180,7 +182,7 @@ namespace SI::Reversi {
 
 		BoardState::FieldState GetNotSiPlayer() const
 		{
-			auto result = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
+			auto result = static_cast<BoardState::FieldState>((siPlayer + 1) % BoardState::FieldState::Unknown);
 			if (result == BoardState::FieldState::Empty)
 				result = BoardState::FieldState::Player1;
 			return result;
@@ -215,14 +217,15 @@ namespace SI::Reversi {
 	public:
 
 		void GetBestMoveAsync(std::function<void(const BoardState&)> callback) {
-			std::thread th([&]() {callback(GetBestMove()); });
+			std::thread th([callback,this]() {
+				callback(GetBestMove()); 
+			});
 			th.detach();
 		}
 
 		void SetOpponentMove(const BoardState& opponentMove) {
 			if (currentPlayer == siPlayer)
 				throw std::exception("It's move of SI");
-			IncrementPlayer();
 
 			std::lock_guard<std::shared_mutex> lock(*currentStateMutex);
 			for (auto el : currentState->children)
@@ -231,10 +234,11 @@ namespace SI::Reversi {
 				{
 					currentState = el;
 					currentState->SetAsRoot();
+					IncrementPlayer();
 					return;
 				}
 			}
-			std::exception("Undefined move");			
+			throw std::exception("Undefined move");			
 		}
 
 	private:

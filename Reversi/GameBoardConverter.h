@@ -22,9 +22,12 @@ namespace Reversi
 		{
 			switch ( color )
 			{
-			case PlayerColor::BlackPlayer:return SI::Reversi::BoardState::FieldState::Player2;
-			case PlayerColor::WhitePlayer:return SI::Reversi::BoardState::FieldState::Player1;
-			case PlayerColor::EmptyField:return SI::Reversi::BoardState::FieldState::Empty;
+			case PlayerColor::BlackPlayer:
+				return SI::Reversi::BoardState::FieldState::Player1;
+			case PlayerColor::WhitePlayer:
+				return SI::Reversi::BoardState::FieldState::Player2;
+			case PlayerColor::EmptyField:
+				return SI::Reversi::BoardState::FieldState::Empty;
 			default:return SI::Reversi::BoardState::FieldState::Unknown;
 			}
 		}

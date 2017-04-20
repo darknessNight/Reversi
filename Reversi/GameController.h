@@ -2,6 +2,7 @@
 #include "GameWindow.h"
 #include "PlayerColor.h"
 #include "GameBoard.h"
+#include "SiPlayer.h"
 
 #include <thread>
 
@@ -9,6 +10,9 @@ class GameWindow;
 
 
 class GameController {
+private:
+	const unsigned minTreeDepth = 2;
+	const int gameMode = 1;
 public:
 	GameController(GameWindow* handle);
 	void pawnPlaced(int x, int y);

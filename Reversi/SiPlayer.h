@@ -20,7 +20,7 @@ namespace Reversi
 		{
 
 		}
-
+	private:
 		std::function<double(const SI::Reversi::BoardState &state)> getStandardHeuristic()
 		{
 			return [&] (SI::Reversi::BoardState state) {return standardHeuristic(state); };
@@ -43,14 +43,19 @@ namespace Reversi
 				}
 			return result;
 		}
-
+	public:
 		virtual void StartMove(GameBoard board)
 		{
 			lastState=GameBoardConverter::ConvertToBoardState(board);
 			minmax.SetOpponentMove(lastState);
-			minmax.GetBestMoveAsync([&] (const SI::Reversi::BoardState& state) {
+			minmax.GetBestMoveAsync(getAsyncFunc());
+		}
+	private:
+		std::function<void(const SI::Reversi::BoardState&)> getAsyncFunc()
+		{
+			return [&](const SI::Reversi::BoardState& state) {
 				doCallback(state);
-			});
+			};
 		}
 
 		void doCallback(const SI::Reversi::BoardState& state)
@@ -60,9 +65,9 @@ namespace Reversi
 					for ( int j = 0; j < state.colsCount; j++ )
 						if ( state.GetFieldState(i, j) != SI::Reversi::BoardState::FieldState::Empty &&
 							lastState.GetFieldState(i, j) == SI::Reversi::BoardState::FieldState::Empty )
-							callBackFunc(i, j);
+							callBackFunc(i,j);
 		}
-
+	public:
 		virtual void setCallback(std::function<void(int x, int y)> callback)
 		{
 			callBackFunc = callback;

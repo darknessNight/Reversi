@@ -63,7 +63,7 @@ namespace darknessNight::Multithreading
 
 		unsigned GetFreeSlotNumber()const
 		{
-			std::lock_guard<std::mutex>(*counterMutex);
+			std::lock_guard<std::mutex> lock(*counterMutex);
 			return *counter;
 		}
 

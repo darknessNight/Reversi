@@ -1,6 +1,7 @@
 #include "GameController.h"
 
 
+
 GameController::GameController(GameWindow* handle) {
 	this->handle = handle;
 
@@ -35,6 +36,13 @@ void GameController::pawnPlaced(int x, int y) {
 
 void GameController::mainLoop() {
 	PlayerColor oppsitePlayer;
+	Reversi::SiPlayer siPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+	bool askSI = true;
+
+	siPlayer.setCallback([&] (int x, int y) {
+		this->pawnPlaced(x, y); 
+		askSI = true; 
+	});
 
 	while(continueLoop) {
 		if (pawnWasPlaced) {
@@ -100,7 +108,15 @@ void GameController::mainLoop() {
 				this->handle->doDraw();
 			}
 
+			if(gameMode==2 )
 			this->handle->allowToClick();
+			else if( playerNumber==PlayerColor::BlackPlayer )
+				this->handle->allowToClick();
+			else if ( askSI )
+			{
+				askSI = false;
+				siPlayer.StartMove(gameBoard);
+			}
 
 			pawnWasPlaced = false;
 		}
