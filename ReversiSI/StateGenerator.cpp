@@ -51,6 +51,7 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
+	bool foundGap = false;
 	BoardStateMemoryOptimized::State fieldState;
 	if (x != 0) 
 	{
@@ -58,7 +59,7 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 		{
 			for (unsigned int i = 1; x >= i; i++) {
 				fieldState = this->currentState.GetFieldState(x - i, y);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x - i, y, x, y, LineDirection::West });
 					break;
 				}
@@ -68,13 +69,14 @@ void SI::Reversi::StateGenerator::checkHorizontalLine(unsigned int x, unsigned i
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
+	foundGap = false;
 	if (x != BoardState::colsCount)
 	{
 		if (this->currentState.GetFieldState(x + 1, y) != BoardStateMemoryOptimized::State::Empty)
 		{
 			for (unsigned int i = x + 1; i < BoardState::colsCount; i++) {
 				fieldState = this->currentState.GetFieldState(i, y);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ i, y, x, y, LineDirection::East });
 					break;
 				}
@@ -88,6 +90,7 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
+	bool foundGap = false;
 	BoardStateMemoryOptimized::State fieldState;
 	if (y != 0)
 	{
@@ -95,7 +98,7 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 		{
 			for (unsigned int i = 1; y >= i; i++) {
 				fieldState = this->currentState.GetFieldState(x, y - i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x, y - i, x, y, LineDirection::North });
 					break;
 				}
@@ -105,13 +108,14 @@ void SI::Reversi::StateGenerator::checkVerticalLine(unsigned int x, unsigned int
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
+	foundGap = false;
 	if (y != BoardState::rowsCount)
 	{
 		if (this->currentState.GetFieldState(x, y + 1) != BoardStateMemoryOptimized::State::Empty)
 		{
 			for (unsigned int i = y + 1; i < this->currentState.rowsCount; i++) {
 				fieldState = this->currentState.GetFieldState(x, i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x, i, x, y, LineDirection::South });
 					break;
 				}
@@ -125,6 +129,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 {
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
+	bool foundGap = false;
 	BoardStateMemoryOptimized::State fieldState;
 	if (x != 0 && y != 0) 
 	{
@@ -132,7 +137,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 		{
 			for (unsigned int i = 1; x >= i && y >= i; i++) {
 				fieldState = this->currentState.GetFieldState(x - i, y - i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x - i, y - i, x, y, LineDirection::NorthWest });
 					break;
 				}
@@ -142,13 +147,14 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNW_SE(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
+	foundGap = false;
 	if (x != BoardState::colsCount && y != BoardState::rowsCount)
 	{
 		if (this->currentState.GetFieldState(x + 1, y + 1) != BoardStateMemoryOptimized::State::Empty)
 		{
 			for (unsigned int i = 1; x + i < this->currentState.colsCount && y + i < this->currentState.rowsCount; i++) {
 				fieldState = this->currentState.GetFieldState(x + i, y + i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x + i, y + i, x, y, LineDirection::SouthEast });
 					break;
 				}
@@ -163,6 +169,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 	
 	bool opponentPieceFound = false;
 	bool ownPieceFound = false;
+	bool foundGap = false;
 	BoardStateMemoryOptimized::State fieldState;
 	if (x != 0 && y != BoardState::rowsCount)
 	{
@@ -170,7 +177,7 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 		{
 			for (unsigned int i = 1; x >= i && y + i < this->currentState.rowsCount; i++) {
 				fieldState = this->currentState.GetFieldState(x - i, y + i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x - i, y + i, x, y, LineDirection::SouthWest });
 					break;
 				}
@@ -180,13 +187,14 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 
 	opponentPieceFound = false;
 	ownPieceFound = false;
+	foundGap = false;
 	if (x != BoardState::colsCount && y != 0)
 	{
 		if (this->currentState.GetFieldState(x + 1, y - 1) != BoardStateMemoryOptimized::State::Empty)
 		{
 			for (unsigned int i = 1; x + i < this->currentState.colsCount && y >= i; i++) {
 				fieldState = this->currentState.GetFieldState(x + i, y - i);
-				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound)) {
+				if (checkMovePossibillityOnField(fieldState, &opponentPieceFound, &ownPieceFound, &foundGap)) {
 					foundFields->push_back({ x + i, y - i, x, y, LineDirection::NorthEast });
 					break;
 				}
@@ -197,19 +205,23 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 }
 
 bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, 
-	bool* opponentPieceFound, bool* ownPieceFound)
+	bool* ownPieceFoundAfterOpponentPiece, bool* ownPieceFound, bool *foundGap)
 {
-	if (fieldState != this->nextPlayer && fieldState != BoardStateMemoryOptimized::State::Empty && !*opponentPieceFound) {
-		*opponentPieceFound = true;
+	if (fieldState != this->nextPlayer && fieldState != BoardStateMemoryOptimized::State::Empty && !*ownPieceFoundAfterOpponentPiece) {
+		*ownPieceFoundAfterOpponentPiece = true;
 	}
-	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
+	else if (fieldState == this->nextPlayer && *ownPieceFoundAfterOpponentPiece) {
 		*ownPieceFound = true;
 	}
-	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
+	else if (fieldState == this->nextPlayer && *ownPieceFoundAfterOpponentPiece) {
 		return false;
 	}
-	else if (fieldState == BoardStateMemoryOptimized::State::Empty && *opponentPieceFound && !*ownPieceFound) {
+	else if (fieldState == BoardStateMemoryOptimized::State::Empty && *ownPieceFoundAfterOpponentPiece && !*ownPieceFound) {
 		return true;
+	}
+	else if (fieldState == BoardStateMemoryOptimized::State::Empty && !*ownPieceFoundAfterOpponentPiece && 
+		!*ownPieceFoundAfterOpponentPiece) {
+		*foundGap = true;
 	}
 	return false;
 }

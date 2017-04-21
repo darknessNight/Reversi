@@ -5,15 +5,32 @@
 GameController::GameController(GameWindow* handle) {
 	this->handle = handle;
 
+	int stany[8][8] = {
+		{ 1,0,1,0,2,0,0,0 },
+		{ 0,1,2,2,2,2,1,1 },
+		{ 0,0,2,2,2,2,2,0 },
+		{ 1,2,2,1,2,2,2,1 },
+		{ 2,2,2,1,2,2,1,1 },
+		{ 2,2,2,1,2,2,2,1 },
+		{ 2,0,2,2,2,2,2,2 },
+		{ 0,0,2,1,2,0,1,0 }
+	};
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
+			switch (stany[j][i]) {
+			case 0:
+				this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
+				break;
+			case 1:
+				this->gameBoard.setSquare(i, j, PlayerColor::BlackPlayer);
+				break;
+			case 2:
+				this->gameBoard.setSquare(i, j, PlayerColor::WhitePlayer);
+				break;
+			}
 		}
 	}
-	this->gameBoard.setSquare(3, 3, PlayerColor::WhitePlayer);
-	this->gameBoard.setSquare(4, 4, PlayerColor::WhitePlayer);
-	this->gameBoard.setSquare(3, 4, PlayerColor::BlackPlayer);
-	this->gameBoard.setSquare(4, 3, PlayerColor::BlackPlayer);
 
 	communicate = L"Pocz¹tek gry. Czarne zaczynaj¹.";
 	this->handle->doDraw();
