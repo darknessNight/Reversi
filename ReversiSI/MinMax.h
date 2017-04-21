@@ -4,8 +4,7 @@
 #include "MemoryUsageGuard.h"
 #include <functional>
 #include <atomic>
-#undef max
-#undef min
+#include <iostream>
 
 using darknessNight::Multithreading::ParallelJobExecutor;
 
@@ -72,6 +71,7 @@ namespace SI::Reversi {
 		{
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
+			executor->SetNumberOfThreads(executor->GetCPUNumberOfThreads() - 2);
 		}
 
 		~MinMax()
@@ -95,11 +95,15 @@ namespace SI::Reversi {
 		BoardState GetBestMove() {
 			CheckAndPrepare();
 
+			std::cout << "Waiting for depth\n";
+			std::cout << "Current depth: " << currentDepth << "\n";
+
 			while(currentDepth<minimumDepth)
 			{
 				std::this_thread::sleep_for(std::chrono::microseconds(100));
 			}
 
+			std::cout << "Try find best move\n";
 			auto bestValue = -std::numeric_limits<double>::max();
 			auto bestState = currentState;
 			for (auto el : currentState->children)
@@ -111,10 +115,12 @@ namespace SI::Reversi {
 				}
 			}
 
+			std::cout << "Dealloc unreachable moves\n";
 			currentStateMutex->lock();
 			currentState = bestState;
 			currentState->SetAsRoot();
 			currentStateMutex->unlock();
+			std::cout << "End of minmax\n";
 			return bestState->state;
 		}
 
@@ -133,13 +139,20 @@ namespace SI::Reversi {
 			int child = 1;
 			std::mutex mutex;
 			levels[parent].push_back(currentState);
-
+			int darkSoulIt;
 			while (working) {
+				darkSoulIt = 0;
 				executor->ForEach<std::shared_ptr<MinMaxNode>>([&](std::shared_ptr<MinMaxNode>& next)
 				{
 					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
+					mutex.lock();
+					if ( next->parent.expired() ) darkSoulIt++;
+					mutex.unlock();
 					minmax(next, levels[child], mutex);
 				}, levels[parent]);
+
+				std::cout <<"Unnecesary iterations: "<< darkSoulIt << " Count of childrens: " << levels[child].size() << "; Level: "<<currentDepth
+					<<" Available memory:" << memoryGuard.GetAllAvailableMemory()/1024.0/1024.0<<" MB"<<"\n";
 
 				currentDepth++;
 				parent = (parent + 1) % 2;
@@ -152,10 +165,11 @@ namespace SI::Reversi {
 
 		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
 		{
+			if ( node->parent.expired() && !node->IsRoot() )
+				return;
+
 			auto generator = generatorFabric(node->state, node->maximizing?siPlayer:GetNotSiPlayer());
 
-			if (node->parent.expired() && !node->IsRoot())
-				return;
 
 			if (!generator->HasNextState()) {
 				std::lock_guard<std::mutex> lock(mutex);
@@ -169,7 +183,7 @@ namespace SI::Reversi {
 			
 			for(auto el: nexts)
 			{
-				memoryGuard.WaitForAvailableMemeory();//such method much optimized
+				memoryGuard.WaitForAvailableMemeory();
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
@@ -232,7 +246,9 @@ namespace SI::Reversi {
 			{
 				if (el->state==opponentMove)
 				{
+					std::cout << "Found passing opponet move\nTry dealloc\n";
 					currentState = el;
+					std::cout << "Deallocated\n";
 					currentState->SetAsRoot();
 					IncrementPlayer();
 					return;
@@ -247,6 +263,7 @@ namespace SI::Reversi {
 			currentPlayer = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
 			if (currentPlayer == BoardState::FieldState::Empty)
 				currentPlayer = BoardState::FieldState::Player1;
+			currentDepth--;
 		}
 	public:
 		unsigned GetCurrentDepth() const
