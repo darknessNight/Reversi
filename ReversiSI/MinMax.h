@@ -254,6 +254,31 @@ namespace SI::Reversi {
 					return;
 				}
 			}
+			std::cout << "Opponent move:-----------\n";
+			for ( int i = 0; i < opponentMove.rowsCount; i++ )
+			{
+				for ( int j = 0; j < opponentMove.colsCount; j++ )
+					std::cout << (int)opponentMove.GetFieldState(i, j);
+				std::cout << "\n";
+			}
+			std::cout << "Current move:-----------\n";
+			for ( int i = 0; i < opponentMove.rowsCount; i++ )
+			{
+				for ( int j = 0; j < opponentMove.colsCount; j++ )
+					std::cout << (int)currentState->state.GetFieldState(i, j);
+				std::cout << "\n";
+			}
+			std::cout << "Child moves:-----------\n";
+			for ( auto el : currentState->children )
+			{
+				for ( int i = 0; i < opponentMove.rowsCount; i++ )
+				{
+					for ( int j = 0; j < opponentMove.colsCount; j++ )
+						std::cout << (int)el->state.GetFieldState(i, j);
+					std::cout << "\n";
+				}
+				std::cout << "----------------------\n";
+			}
 			throw std::exception("Undefined move");			
 		}
 

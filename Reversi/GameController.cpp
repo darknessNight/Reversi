@@ -5,15 +5,32 @@
 GameController::GameController(GameWindow* handle) {
 	this->handle = handle;
 
+	int stany[8][8] = {
+		{ 0,0,0,0,0,0,0,0 },
+		{ 0,0,0,0,0,0,0,0 },
+		{ 0,0,0,0,0,0,0,0 },
+		{ 0,0,0,2,1,0,0,0 },
+		{ 0,0,0,1,2,0,0,0 },
+		{ 0,0,0,0,0,0,0,0 },
+		{ 0,0,0,0,0,0,0,0 },
+		{ 0,0,0,0,0,0,0,0 }
+	};
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
+			switch (stany[j][i]) {
+			case 0:
+				this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
+				break;
+			case 1:
+				this->gameBoard.setSquare(i, j, PlayerColor::BlackPlayer);
+				break;
+			case 2:
+				this->gameBoard.setSquare(i, j, PlayerColor::WhitePlayer);
+				break;
+			}
 		}
 	}
-	this->gameBoard.setSquare(3, 3, PlayerColor::WhitePlayer);
-	this->gameBoard.setSquare(4, 4, PlayerColor::WhitePlayer);
-	this->gameBoard.setSquare(3, 4, PlayerColor::BlackPlayer);
-	this->gameBoard.setSquare(4, 3, PlayerColor::BlackPlayer);
 
 	communicate = L"Pocz¹tek gry. Czarne zaczynaj¹.";
 	this->handle->doDraw();
@@ -102,20 +119,24 @@ void GameController::mainLoop() {
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 						}
+						gameEnded = true;
 					}
 				}
 				
 				this->handle->doDraw();
 			}
 
-			if(gameMode==2 )
-			this->handle->allowToClick();
-			else if( playerNumber==PlayerColor::BlackPlayer )
-				this->handle->allowToClick();
-			else if ( askSI )
+			if ( !gameEnded )
 			{
-				askSI = false;
-				siPlayer.StartMove(gameBoard);
+				if ( gameMode == 2 )
+					this->handle->allowToClick();
+				else if ( playerNumber == PlayerColor::BlackPlayer )
+					this->handle->allowToClick();
+				else if ( askSI )
+				{
+					askSI = false;
+					siPlayer.StartMove(gameBoard);
+				}
 			}
 
 			pawnWasPlaced = false;
@@ -274,4 +295,6 @@ void GameController::reset() {
 	this->handle->doDraw();
 
 	this->playerNumber = PlayerColor::BlackPlayer;
+
+	gameEnded=false;
 }

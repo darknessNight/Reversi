@@ -50,7 +50,8 @@ namespace SI::Reversi
 		void checkDiagonalLineNW_SE(unsigned int x, unsigned int y);
 		void checkDiagonalLineNE_SW(unsigned int x, unsigned int y);
 
-		bool checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, bool* opponentPieceFound, bool* ownPieceFound);
+		bool checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, bool* opponentPieceFound, 
+			bool* ownPieceFound, bool *foundGap);
 
 		void generateNewStatesBasedOnFoundPoints();
 		void setNewFieldState(int i);
