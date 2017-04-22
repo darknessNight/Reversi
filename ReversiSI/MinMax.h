@@ -6,10 +6,17 @@
 #include <atomic>
 #include <iostream>
 
+typedef bool POZIOM_ZAJEBISTOSCI;
+#define ZAJEBISTOSC true
+#define NIE_ZAJEBISTOSC false
+
+#define ZAJEBISTOSCI_NIE_ZMIENISZ const
+
 using darknessNight::Multithreading::ParallelJobExecutor;
 
 namespace SI::Reversi {
 	class MinMax {
+		ZAJEBISTOSCI_NIE_ZMIENISZ POZIOM_ZAJEBISTOSCI SUPER_EXTRA_ZAJEBISTY_CONST = ZAJEBISTOSC;//TUTAJ JEST ZAJEBISTY CONST
 	protected:
 		struct MinMaxNode
 		{
@@ -249,7 +256,10 @@ namespace SI::Reversi {
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
+
+				if(SUPER_EXTRA_ZAJEBISTY_CONST)
 				if ( node->children.size()>1 && currentDepth>2 && betaHeur(valueOfCurrent, heur(el)) ) continue;
+
 				mutex.lock();
 				children.push_back(child);
 				mutex.unlock();
