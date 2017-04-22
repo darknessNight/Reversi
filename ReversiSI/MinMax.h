@@ -62,7 +62,7 @@ namespace SI::Reversi {
 		BoardState::FieldState currentPlayer = BoardState::FieldState::Player1;
 		std::function<double(const BoardState&)> heur;
 		std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> generatorFabric;
-		std::function<bool(double, double)> betaHeur = DefaultBetaHeur;
+		std::function<bool(BoardState, BoardState)> betaHeur;
 		unsigned minimumDepth;
 		unsigned currentDepth=1;
 		std::shared_ptr<ParallelJobExecutor> executor;
@@ -70,6 +70,7 @@ namespace SI::Reversi {
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
 		bool restart = false;
+		bool alphaBetaAlgorithm = SUPER_EXTRA_ZAJEBISTY_CONST;
 		darknessNight::MemoryUsageGuard memoryGuard;
 
 	public:
@@ -81,6 +82,7 @@ namespace SI::Reversi {
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
 			executor->SetNumberOfThreads(executor->GetCPUNumberOfThreads() - 2);
+			betaHeur=[&](BoardState b1, BoardState b2) ->bool {return DefaultBetaHeur(b1, b2); };
 		}
 
 		~MinMax()
@@ -91,7 +93,7 @@ namespace SI::Reversi {
 				algorithmThread->join();
 		}
 
-		void SetBetaHeur(std::function<bool(double, double)> heur)
+		void SetBetaHeur(std::function<bool(BoardState, BoardState)> heur)
 		{
 			betaHeur = heur;
 		}
@@ -119,7 +121,7 @@ namespace SI::Reversi {
 
 			std::cout << "Try find best move\n";
 			auto bestValue = -std::numeric_limits<double>::max();
-			currentStateMutex->lock();
+			
 			auto bestState = currentState;
 			for (auto el : currentState->children)
 			{
@@ -131,6 +133,7 @@ namespace SI::Reversi {
 			}
 
 			std::cout << "Dealloc unreachable moves\n";
+			currentStateMutex->lock();
 			currentState = bestState;
 			currentState->SetAsRoot();
 			ResetMinMax();
@@ -184,7 +187,7 @@ namespace SI::Reversi {
 					levels[child].clear();
 				}
 
-				while ( levels[parent].empty() && working )
+				do
 				if ( restart )
 				{
 					std::cout << "Start restarting\n";
@@ -193,6 +196,7 @@ namespace SI::Reversi {
 					restart = false;
 					std::cout << "Ended restarting\n";
 				}
+				while (levels[parent].empty() && working);
 			}
 			std::cout << "Ended game\n";
 		}
@@ -249,17 +253,13 @@ namespace SI::Reversi {
 
 			auto nexts=generator->GetAllNextStates();
 			
-			auto valueOfCurrent = heur(node->state);
+			if (alphaBetaAlgorithm &&!node->root && currentDepth>2 && betaHeur(node->state, node->parent.lock()->state)) return;
 			for(auto el: nexts)
 			{
 				memoryGuard.WaitForAvailableMemeory();
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
-
-				if(SUPER_EXTRA_ZAJEBISTY_CONST)
-				if ( node->children.size()>1 && currentDepth>2 && betaHeur(valueOfCurrent, heur(el)) ) continue;
-
 				mutex.lock();
 				children.push_back(child);
 				mutex.unlock();
@@ -386,9 +386,9 @@ namespace SI::Reversi {
 			return currentDepth;
 		}
 		protected:
-			static bool DefaultBetaHeur(double current, double next)
+			bool DefaultBetaHeur(BoardState current, BoardState next)
 			{
-				return (std::abs(current - next) > next);
+				return heur(current) > heur(next)*heur(next);
 			}
 	};
 }
