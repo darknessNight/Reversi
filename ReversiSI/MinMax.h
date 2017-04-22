@@ -73,6 +73,7 @@ namespace SI::Reversi {
 		{
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
+			executor->SetNumberOfThreads(executor->GetCPUNumberOfThreads() - 2);
 		}
 
 		~MinMax()
@@ -111,6 +112,7 @@ namespace SI::Reversi {
 
 			std::cout << "Try find best move\n";
 			auto bestValue = -std::numeric_limits<double>::max();
+			currentStateMutex->lock();
 			auto bestState = currentState;
 			for (auto el : currentState->children)
 			{
@@ -122,7 +124,6 @@ namespace SI::Reversi {
 			}
 
 			std::cout << "Dealloc unreachable moves\n";
-			currentStateMutex->lock();
 			currentState = bestState;
 			currentState->SetAsRoot();
 			ResetMinMax();
@@ -248,7 +249,7 @@ namespace SI::Reversi {
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
-				//if ( node->children.size()>1 && currentDepth>2 && betaHeur(valueOfCurrent, heur(el)) ) continue;
+				if ( node->children.size()>1 && currentDepth>2 && betaHeur(valueOfCurrent, heur(el)) ) continue;
 				mutex.lock();
 				children.push_back(child);
 				mutex.unlock();
