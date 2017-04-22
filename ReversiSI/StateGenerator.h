@@ -50,13 +50,13 @@ namespace SI::Reversi
 		void checkDiagonalLineNW_SE(unsigned int x, unsigned int y);
 		void checkDiagonalLineNE_SW(unsigned int x, unsigned int y);
 
-		bool checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, bool* opponentPieceFound, 
+		bool checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, bool* opponentPieceFound,
 			bool* ownPieceFound, bool *foundGap);
 
 		void generateNewStatesBasedOnFoundPoints();
 		void setNewFieldState(int i);
 		bool validateMove(int xDifference, int yDifference);
-		void setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, LineDirection direction);
+		void setIncrementalValuesAccordingToDirection(int* x, int* y, LineDirection direction);
 		std::vector<PossibleAndCurrentFields> getAndRemoveDuplicates(PossibleAndCurrentFields currentFields);
 
 	protected:
@@ -69,7 +69,7 @@ namespace SI::Reversi
 
 
 		virtual std::vector<BoardState> GetAllNextStates();
-// zmieniono na std::vector<BoardState> GetAllNextStates(); musisz to uwzględnić
+		// zmieniono na std::vector<BoardState> GetAllNextStates(); musisz to uwzględnić
 		virtual BoardState GetNextState();
 		virtual bool HasNextState();
 		virtual void Reset();
@@ -77,8 +77,8 @@ namespace SI::Reversi
 		static int abs(int a) {
 			if (a >= 0)	return a;
 			else return -a;
-    }
-    
+		}
+
 		static unsigned int max(unsigned int a, unsigned int b) {
 			if (a > b)
 				return a;
@@ -86,9 +86,16 @@ namespace SI::Reversi
 				return b;
 		}
 
-				virtual BoardState GetCurrentState()
-				{
-					return currentState;
-				}
-			};
+		static unsigned int min(unsigned int a, unsigned int b) {
+			if (a > b)
+				return b;
+			else
+				return a;
+		}
+
+		virtual BoardState GetCurrentState()
+		{
+			return currentState;
+		}
+	};
 }
