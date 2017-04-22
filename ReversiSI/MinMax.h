@@ -6,15 +6,21 @@
 #include <atomic>
 #include <iostream>
 
+/*namespace std {
+	typedef shared_timed_mutex shared_mutex;
+}*/
+
 typedef bool POZIOM_ZAJEBISTOSCI;
 #define ZAJEBISTOSC true
 #define NIE_ZAJEBISTOSC false
 
 #define ZAJEBISTOSCI_NIE_ZMIENISZ const
 
+//using darknessNight_Multithreading::ParallelJobExecutor;
 using darknessNight::Multithreading::ParallelJobExecutor;
 
 namespace SI::Reversi {
+//namespace SI_Reversi {
 	class MinMax {
 		ZAJEBISTOSCI_NIE_ZMIENISZ POZIOM_ZAJEBISTOSCI SUPER_EXTRA_ZAJEBISTY_CONST = ZAJEBISTOSC;//TUTAJ JEST ZAJEBISTY CONST
 	protected:
@@ -109,6 +115,7 @@ namespace SI::Reversi {
 		}
 
 		BoardState GetBestMove() {
+			std::cout << ">>Checem ruch od SI\n;";
 			CheckAndPrepare();
 
 			std::cout << "Waiting for depth\n";
@@ -139,6 +146,7 @@ namespace SI::Reversi {
 			ResetMinMax();
 			currentStateMutex->unlock();
 			std::cout << "End of minmax\n";
+			std::cout << ">>Mam ruch od SI\n;";
 			return bestState->state;
 		}
 
@@ -311,6 +319,7 @@ namespace SI::Reversi {
 		}
 
 		void SetOpponentMove(const BoardState& opponentMove) {
+			std::cout << ">>Wpycham mu ruch do gardla\n;";
 			if (currentPlayer == siPlayer)
 				throw std::exception("It's move of SI");
 
@@ -325,6 +334,7 @@ namespace SI::Reversi {
 					currentState->SetAsRoot();
 					IncrementPlayer();
 					ResetMinMax();
+					std::cout << ">>Wepchnalem mu ruch do gardla\n;";
 					return;
 				}
 			}
