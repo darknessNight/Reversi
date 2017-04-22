@@ -71,7 +71,6 @@ namespace SI::Reversi {
 		{
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
-			executor->SetNumberOfThreads(0);
 		}
 
 		~MinMax()
