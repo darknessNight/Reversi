@@ -20,11 +20,11 @@ void SI::Reversi::StateGenerator::emptyAllVectors()
 	if (this->nextMapStates == nullptr)
 		this->nextMapStates = new std::vector<BoardState>();
 	else
-		this->nextMapStates->empty();
+		this->nextMapStates->clear();
 	if (this->foundFields == nullptr)
 		this->foundFields = new std::vector<PossibleAndCurrentFields>();
 	else
-		this->foundFields->empty();
+		this->foundFields->clear();
 
 	this->currentStateIndex = 0;
 }

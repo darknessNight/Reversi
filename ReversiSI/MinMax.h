@@ -71,7 +71,7 @@ namespace SI::Reversi {
 		{
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
-			executor->SetNumberOfThreads(executor->GetCPUNumberOfThreads() - 2);
+			executor->SetNumberOfThreads(0);
 		}
 
 		~MinMax()
@@ -180,6 +180,9 @@ namespace SI::Reversi {
 			}
 
 			auto nexts=generator->GetAllNextStates();
+			auto safeGenerator = generatorFabric(node->state, node->maximizing ? siPlayer : GetNotSiPlayer());
+			auto nextasdfasdfasfasfasd = safeGenerator->GetAllNextStates();
+			auto nextragsgadfgadfgasdfwegasrgerg = safeGenerator->GetAllNextStates();
 			
 			for(auto el: nexts)
 			{
@@ -254,18 +257,34 @@ namespace SI::Reversi {
 					return;
 				}
 			}
+
+			auto nextStates = generatorFabric(currentState->state, GetNotSiPlayer())->GetAllNextStates();
+			for ( auto el : nextStates )
+			{
+				if ( el == opponentMove )
+				{
+					for ( int i = 0; i < opponentMove.rowsCount; i++ )
+					{
+						for ( int j = 0; j < opponentMove.colsCount; j++ )
+							std::cout << (int)el.GetFieldState(j, i);
+						std::cout << "\n";
+					}
+					std::cout << "----------------------\n";
+				}
+			}
+
 			std::cout << "Opponent move:-----------\n";
 			for ( int i = 0; i < opponentMove.rowsCount; i++ )
 			{
 				for ( int j = 0; j < opponentMove.colsCount; j++ )
-					std::cout << (int)opponentMove.GetFieldState(i, j);
+					std::cout << (int)opponentMove.GetFieldState(j,i);
 				std::cout << "\n";
 			}
 			std::cout << "Current move:-----------\n";
 			for ( int i = 0; i < opponentMove.rowsCount; i++ )
 			{
 				for ( int j = 0; j < opponentMove.colsCount; j++ )
-					std::cout << (int)currentState->state.GetFieldState(i, j);
+					std::cout << (int)currentState->state.GetFieldState(j,i);
 				std::cout << "\n";
 			}
 			std::cout << "Child moves:-----------\n";
@@ -274,7 +293,7 @@ namespace SI::Reversi {
 				for ( int i = 0; i < opponentMove.rowsCount; i++ )
 				{
 					for ( int j = 0; j < opponentMove.colsCount; j++ )
-						std::cout << (int)el->state.GetFieldState(i, j);
+						std::cout << (int)el->state.GetFieldState(j,i);
 					std::cout << "\n";
 				}
 				std::cout << "----------------------\n";

@@ -2,23 +2,27 @@
 
 
 
-GameController::GameController(GameWindow* handle) {
+GameController::GameController(GameWindow* handle)
+{
 	this->handle = handle;
 
 	int stany[8][8] = {
-		{ 0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0 },
-		{ 0,0,0,2,1,0,0,0 },
-		{ 0,0,0,1,2,0,0,0 },
-		{ 0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0 }
+		{ 1,1,1,1,0,2,2,2},
+	{ 1,0,1,0,1,1,2,2 },
+	{ 1,1,2,1,2,2,1,2},
+{ 0,2,2,2,2,1,2,2},
+		{2,2,2,1,1,2,2,2},
+		{0,0,2,1,2,2,2,2},
+		{0,2,1,2,1,1,2,2},
+		{2,2,2,2,2,2,2,2 }
 	};
 
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < 8; j++) {
-			switch (stany[j][i]) {
+	for ( int i = 0; i < 8; i++ )
+	{
+		for ( int j = 0; j < 8; j++ )
+		{
+			switch ( stany[j][i] )
+			{
 			case 0:
 				this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
 				break;
@@ -44,46 +48,56 @@ GameController::GameController(GameWindow* handle) {
 }
 
 
-void GameController::pawnPlaced(int x, int y) {
+void GameController::pawnPlaced(int x, int y)
+{
 	placedPawnLocationX = x;
 	placedPawnLocationY = y;
 	pawnWasPlaced = true;
 }
 
 
-void GameController::mainLoop() {
+void GameController::mainLoop()
+{
 	PlayerColor oppsitePlayer;
 	Reversi::SiPlayer siPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
 	bool askSI = true;
 
 	siPlayer.setCallback([&] (int x, int y) {
-		this->pawnPlaced(x, y); 
-		askSI = true; 
+		this->pawnPlaced(x, y);
+		askSI = true;
 	});
 
-	while(continueLoop) {
-		if (pawnWasPlaced) {
+	while ( continueLoop )
+	{
+		if ( pawnWasPlaced )
+		{
 
-			if (checkIfMoveIsLegal(placedPawnLocationX, placedPawnLocationY, playerNumber)) {
+			if ( checkIfMoveIsLegal(placedPawnLocationX, placedPawnLocationY, playerNumber) )
+			{
 
 				changeGameBoardState(placedPawnLocationX, placedPawnLocationY, playerNumber);
 
-				if (playerNumber == PlayerColor::BlackPlayer) {
+				if ( playerNumber == PlayerColor::BlackPlayer )
+				{
 					oppsitePlayer = PlayerColor::WhitePlayer;
 				}
-				else {
+				else
+				{
 					oppsitePlayer = PlayerColor::BlackPlayer;
 				}
 
-				if (hasMove(oppsitePlayer)) {//kolejny gracz mo¿e wykonaæ ruch
-					if (playerNumber == PlayerColor::BlackPlayer) {//teraz gra bia³y
+				if ( hasMove(oppsitePlayer) )
+				{//kolejny gracz mo¿e wykonaæ ruch
+					if ( playerNumber == PlayerColor::BlackPlayer )
+					{//teraz gra bia³y
 						playerNumber = PlayerColor::WhitePlayer;
 						communicate = L"Ruch bia³ego. Czarne:";
 						communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 						communicate += L" Bia³e:";
 						communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 					}
-					else {//teraz gra czarny
+					else
+					{//teraz gra czarny
 						playerNumber = PlayerColor::BlackPlayer;
 						communicate = L"Ruch czarnego. Czarne:";
 						communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
@@ -91,29 +105,36 @@ void GameController::mainLoop() {
 						communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 					}
 				}
-				else {
-					if (hasMove(playerNumber)) {//kolejny gracz straci³ ruch, jeszcze raz ten sam
-						if (playerNumber == PlayerColor::BlackPlayer) {//znowu czarny
+				else
+				{
+					if ( hasMove(playerNumber) )
+					{//kolejny gracz straci³ ruch, jeszcze raz ten sam
+						if ( playerNumber == PlayerColor::BlackPlayer )
+						{//znowu czarny
 							communicate = L"Bia³y traci ruch. Ruch czarnego. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 						}
-						else {//znowu bia³y
+						else
+						{//znowu bia³y
 							communicate = L"Czarny traci ruch. Ruch bia³ego. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 						}
 					}
-					else{//koniec gry
-						if (countPawns(PlayerColor::BlackPlayer) > countPawns(PlayerColor::WhitePlayer)) {//wygra³ czarny
+					else
+					{//koniec gry
+						if ( countPawns(PlayerColor::BlackPlayer) > countPawns(PlayerColor::WhitePlayer) )
+						{//wygra³ czarny
 							communicate = L"Wygra³ czarny gracz. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 						}
-						else {//wygra³ bia³y
+						else
+						{//wygra³ bia³y
 							communicate = L"Wygra³ bia³y gracz. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
@@ -122,8 +143,12 @@ void GameController::mainLoop() {
 						gameEnded = true;
 					}
 				}
-				
+
 				this->handle->doDraw();
+			}
+			else
+			{
+
 			}
 
 			if ( !gameEnded )
@@ -146,55 +171,70 @@ void GameController::mainLoop() {
 }
 
 
-void GameController::closeMainLoop() {
+void GameController::closeMainLoop()
+{
 	continueLoop = false;
 }
 
 
-sf::String GameController::getCommunicate(){
+sf::String GameController::getCommunicate()
+{
 	return communicate;
 }
 
 
-GameBoard GameController::getGameBoard() {
+GameBoard GameController::getGameBoard()
+{
 	return gameBoard;
 }
 
 
-bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color) {
+bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color)
+{
 
-	if (gameBoard.getSquare(x, y) != PlayerColor::EmptyField) {
+	if ( gameBoard.getSquare(x, y) != PlayerColor::EmptyField )
+	{
 		return false;
 	}
 
 	PlayerColor oppositColor;
-	if (color == PlayerColor::BlackPlayer) {
+	if ( color == PlayerColor::BlackPlayer )
+	{
 		oppositColor = PlayerColor::WhitePlayer;
 	}
-	else {
+	else
+	{
 		oppositColor = PlayerColor::BlackPlayer;
 	}
 
 	bool metOppositColor = false;
 
-	for (int xchange = -1; xchange < 2; xchange++) {
-		for (int ychange = -1; ychange < 2; ychange++) {
+	for ( int xchange = -1; xchange < 2; xchange++ )
+	{
+		for ( int ychange = -1; ychange < 2; ychange++ )
+		{
 			int tempx = x, tempy = y;
 			metOppositColor = false;
-			while (tempx+xchange!=8 && tempx+xchange!=-1 && tempy+ychange!=8 && tempy+ychange!=-1) {
+			while ( tempx + xchange != 8 && tempx + xchange != -1 && tempy + ychange != 8 && tempy + ychange != -1 )
+			{
 				tempx += xchange;
 				tempy += ychange;
-				if (gameBoard.getSquare(tempx, tempy) == oppositColor) {
+				if ( gameBoard.getSquare(tempx, tempy) == oppositColor )
+				{
 					metOppositColor = true;
 				}
-				else if (gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField) {
+				else if ( gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField )
+				{
 					break;
 				}
-				else if (gameBoard.getSquare(tempx, tempy) == color) {
-					if (metOppositColor) {
+				else if ( gameBoard.getSquare(tempx, tempy) == color )
+				{
+					if ( metOppositColor )
+					{
 						return true;
 					}
-					else{
+					else
+					{
 						break;
 					}
 				}
@@ -206,13 +246,16 @@ bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color) {
 }
 
 
-void GameController::changeGameBoardState(int x, int y, PlayerColor color) {
+void GameController::changeGameBoardState(int x, int y, PlayerColor color)
+{
 
 	PlayerColor oppositColor;
-	if (color == PlayerColor::BlackPlayer) {
+	if ( color == PlayerColor::BlackPlayer )
+	{
 		oppositColor = PlayerColor::WhitePlayer;
 	}
-	else {
+	else
+	{
 		oppositColor = PlayerColor::BlackPlayer;
 	}
 
@@ -220,29 +263,38 @@ void GameController::changeGameBoardState(int x, int y, PlayerColor color) {
 
 	gameBoard.setSquare(x, y, color);
 
-	for (int xchange = -1; xchange < 2; xchange++) {
-		for (int ychange = -1; ychange < 2; ychange++) {
+	for ( int xchange = -1; xchange < 2; xchange++ )
+	{
+		for ( int ychange = -1; ychange < 2; ychange++ )
+		{
 			int tempx = x, tempy = y;
 			metOppositColor = false;
-			while (tempx + xchange != 8 && tempx + xchange != -1 && tempy + ychange != 8 && tempy + ychange != -1) {
+			while ( tempx + xchange != 8 && tempx + xchange != -1 && tempy + ychange != 8 && tempy + ychange != -1 )
+			{
 				tempx += xchange;
 				tempy += ychange;
-				if (gameBoard.getSquare(tempx, tempy) == oppositColor) {
+				if ( gameBoard.getSquare(tempx, tempy) == oppositColor )
+				{
 					metOppositColor = true;
 				}
-				else if (gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField) {
+				else if ( gameBoard.getSquare(tempx, tempy) == PlayerColor::EmptyField )
+				{
 					break;
 				}
-				else if (gameBoard.getSquare(tempx, tempy) == color) {
-					if (metOppositColor) {
-						while (tempx - xchange != x || tempy - ychange != y) {
+				else if ( gameBoard.getSquare(tempx, tempy) == color )
+				{
+					if ( metOppositColor )
+					{
+						while ( tempx - xchange != x || tempy - ychange != y )
+						{
 							tempx -= xchange;
 							tempy -= ychange;
 							gameBoard.setSquare(tempx, tempy, color);
 						}
 						break;
 					}
-					else {
+					else
+					{
 						break;
 					}
 				}
@@ -252,12 +304,16 @@ void GameController::changeGameBoardState(int x, int y, PlayerColor color) {
 }
 
 
-int GameController::countPawns(PlayerColor color) {
+int GameController::countPawns(PlayerColor color)
+{
 	int counter = 0;
 
-	for (int x = 0; x < 8; x++) {
-		for (int y = 0; y < 8; y++) {
-			if (gameBoard.getSquare(x, y) == color) {
+	for ( int x = 0; x < 8; x++ )
+	{
+		for ( int y = 0; y < 8; y++ )
+		{
+			if ( gameBoard.getSquare(x, y) == color )
+			{
 				counter++;
 			}
 		}
@@ -267,10 +323,14 @@ int GameController::countPawns(PlayerColor color) {
 }
 
 
-bool GameController::hasMove(PlayerColor color) {
-	for (int x = 0; x < 8; x++) {
-		for (int y = 0; y < 8; y++) {
-			if (checkIfMoveIsLegal(x, y, color)) {
+bool GameController::hasMove(PlayerColor color)
+{
+	for ( int x = 0; x < 8; x++ )
+	{
+		for ( int y = 0; y < 8; y++ )
+		{
+			if ( checkIfMoveIsLegal(x, y, color) )
+			{
 				return true;
 			}
 		}
@@ -280,9 +340,12 @@ bool GameController::hasMove(PlayerColor color) {
 }
 
 
-void GameController::reset() {
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < 8; j++) {
+void GameController::reset()
+{
+	for ( int i = 0; i < 8; i++ )
+	{
+		for ( int j = 0; j < 8; j++ )
+		{
 			this->gameBoard.setSquare(i, j, PlayerColor::EmptyField);
 		}
 	}
@@ -296,5 +359,5 @@ void GameController::reset() {
 
 	this->playerNumber = PlayerColor::BlackPlayer;
 
-	gameEnded=false;
+	gameEnded = false;
 }
