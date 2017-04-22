@@ -135,9 +135,16 @@ void GameController::mainLoop()
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
 						}
-						else
+						else if (countPawns(PlayerColor::BlackPlayer) < countPawns(PlayerColor::WhitePlayer))
 						{//wygra³ bia³y
 							communicate = L"Wygra³ bia³y gracz. Czarne:";
+							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
+							communicate += L" Bia³e:";
+							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
+						}
+						else
+						{//remis
+							communicate = L"Remis. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
 							communicate += std::to_string(countPawns(PlayerColor::WhitePlayer));
