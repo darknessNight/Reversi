@@ -160,7 +160,10 @@ namespace SI::Reversi {
 
 				std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
 				levels[child].clear();
+				if ( levels[parent].empty() )
+					break;
 			}
+			std::cout << "Ended game\n";
 		}
 
 		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
@@ -172,10 +175,17 @@ namespace SI::Reversi {
 
 
 			if (!generator->HasNextState()) {
+				if ( node->parent.expired() )
+					return;
+				auto parentGenerator = generatorFabric(node->parent.lock()->state, node->parent.lock()->maximizing ? siPlayer : GetNotSiPlayer());
+				if ( !parentGenerator->HasNextState() )
+					return;
 				std::lock_guard<std::mutex> lock(mutex);
 				auto newNode = std::make_shared<MinMaxNode>(*node);
+				newNode->parent = node;
 				newNode->maximizing = !node->maximizing;
 				children.push_back(newNode);
+				RefreshParent(newNode);
 				return;
 			}
 

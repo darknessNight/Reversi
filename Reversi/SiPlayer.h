@@ -7,6 +7,7 @@ namespace Reversi
 	
 	class SiPlayer: public Player
 	{
+		bool lastMoveSI = false;
 		std::function<void(int x, int y)> callBackFunc;
 		SI::Reversi::MinMax minmax;
 		SI::Reversi::BoardState::FieldState playerState;
@@ -18,7 +19,7 @@ namespace Reversi
 				getStandardHeuristic()), playerState(GameBoardConverter::ConvertColorToFieldState(playerColor)),
 			lastState(GameBoardConverter::ConvertToBoardState(startState))
 		{
-
+			lastMoveSI = true;
 		}
 	private:
 		std::function<double(const SI::Reversi::BoardState &state)> getStandardHeuristic()
@@ -46,6 +47,9 @@ namespace Reversi
 	public:
 		virtual void StartMove(GameBoard board)
 		{
+			if(!lastMoveSI )
+				minmax.GetBestMove();
+			lastMoveSI = false;
 			lastState=GameBoardConverter::ConvertToBoardState(board);
 			minmax.SetOpponentMove(lastState);
 			minmax.GetBestMoveAsync(getAsyncFunc());
@@ -55,6 +59,7 @@ namespace Reversi
 		{
 			return [&](const SI::Reversi::BoardState& state) {
 				doCallback(state);
+				lastMoveSI = true;
 			};
 		}
 
