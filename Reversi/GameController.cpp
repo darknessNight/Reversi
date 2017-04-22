@@ -200,6 +200,9 @@ GameBoard GameController::getGameBoard()
 
 bool GameController::checkIfMoveIsLegal(int x, int y, PlayerColor color)
 {
+	if (x > 7 || x < 0 || y>7 || y < 0) {
+		return false;
+	}
 
 	if ( gameBoard.getSquare(x, y) != PlayerColor::EmptyField )
 	{
