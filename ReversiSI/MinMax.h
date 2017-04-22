@@ -55,12 +55,14 @@ namespace SI::Reversi {
 		BoardState::FieldState currentPlayer = BoardState::FieldState::Player1;
 		std::function<double(const BoardState&)> heur;
 		std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> generatorFabric;
+		std::function<bool(double, double)> betaHeur = DefaultBetaHeur;
 		unsigned minimumDepth;
 		unsigned currentDepth=1;
 		std::shared_ptr<ParallelJobExecutor> executor;
 		std::shared_ptr<std::shared_mutex> currentStateMutex = std::make_shared<std::shared_mutex>();
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
+		bool restart = false;
 		darknessNight::MemoryUsageGuard memoryGuard;
 
 	public:
@@ -71,7 +73,6 @@ namespace SI::Reversi {
 		{
 			currentState->SetAsRoot();
 			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
-			executor->SetNumberOfThreads(0);
 		}
 
 		~MinMax()
@@ -80,6 +81,11 @@ namespace SI::Reversi {
 			working = false;
 			if (algorithmThread->joinable())
 				algorithmThread->join();
+		}
+
+		void SetBetaHeur(std::function<bool(double, double)> heur)
+		{
+			betaHeur = heur;
 		}
 
 		void SetStatesGenerator(std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> stateGeneratorFabric)
@@ -119,12 +125,19 @@ namespace SI::Reversi {
 			currentStateMutex->lock();
 			currentState = bestState;
 			currentState->SetAsRoot();
+			ResetMinMax();
 			currentStateMutex->unlock();
 			std::cout << "End of minmax\n";
 			return bestState->state;
 		}
 
 	protected:
+		void ResetMinMax()
+		{
+			restart = true;
+			executor->Stop();
+		}
+
 		void CheckAndPrepare()
 		{
 			if (currentPlayer != siPlayer)
@@ -158,12 +171,47 @@ namespace SI::Reversi {
 				parent = (parent + 1) % 2;
 				child = (child + 1) % 2;
 
-				std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
-				levels[child].clear();
-				if ( levels[parent].empty() )
-					break;
+				{
+					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
+					levels[child].clear();
+				}
+
+				while ( levels[parent].empty() && working )
+				if ( restart )
+				{
+					std::cout << "Start restarting\n";
+					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
+					AppendAllChildren(levels[parent]);
+					restart = false;
+					std::cout << "Ended restarting\n";
+				}
 			}
 			std::cout << "Ended game\n";
+		}
+
+		void AppendAllChildren(std::vector<std::shared_ptr<MinMaxNode>> &parents)
+		{
+			std::vector<std::shared_ptr<MinMaxNode>> levels[2];
+			int parentLevel = 0;
+			int childLevel = 1;
+			std::mutex mutex;
+			levels[parentLevel].push_back(currentState);
+			while ( !levels[parentLevel].empty() )
+			{
+				for ( auto node : levels[parentLevel] )
+				{
+					if ( node->children.empty() )
+						parents.push_back(node);
+					for ( auto child : node->children )
+					{
+						levels[childLevel].push_back(child);
+					}
+				}
+
+				parentLevel = (parentLevel + 1) % 2;
+				childLevel = (childLevel + 1) % 2;
+				levels[childLevel].clear();
+			}
 		}
 
 		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
@@ -180,26 +228,27 @@ namespace SI::Reversi {
 				auto parentGenerator = generatorFabric(node->parent.lock()->state, node->parent.lock()->maximizing ? siPlayer : GetNotSiPlayer());
 				if ( !parentGenerator->HasNextState() )
 					return;
+
 				std::lock_guard<std::mutex> lock(mutex);
 				auto newNode = std::make_shared<MinMaxNode>(*node);
 				newNode->parent = node;
 				newNode->maximizing = !node->maximizing;
+				node->children.push_back(newNode);
 				children.push_back(newNode);
 				RefreshParent(newNode);
 				return;
 			}
 
 			auto nexts=generator->GetAllNextStates();
-			auto safeGenerator = generatorFabric(node->state, node->maximizing ? siPlayer : GetNotSiPlayer());
-			auto nextasdfasdfasfasfasd = safeGenerator->GetAllNextStates();
-			auto nextragsgadfgadfgasdfwegasrgerg = safeGenerator->GetAllNextStates();
 			
+			auto valueOfCurrent = heur(node->state);
 			for(auto el: nexts)
 			{
 				memoryGuard.WaitForAvailableMemeory();
 				auto child = std::make_shared<MinMaxNode>(el, !node->maximizing);
 				child->parent = node;
 				node->children.push_back(child);
+				//if ( node->children.size()>1 && currentDepth>2 && betaHeur(valueOfCurrent, heur(el)) ) continue;
 				mutex.lock();
 				children.push_back(child);
 				mutex.unlock();
@@ -264,6 +313,7 @@ namespace SI::Reversi {
 					std::cout << "Deallocated\n";
 					currentState->SetAsRoot();
 					IncrementPlayer();
+					ResetMinMax();
 					return;
 				}
 			}
@@ -324,5 +374,10 @@ namespace SI::Reversi {
 		{
 			return currentDepth;
 		}
+		protected:
+			static bool DefaultBetaHeur(double current, double next)
+			{
+				return (std::abs(current - next) > next);
+			}
 	};
 }

@@ -10,8 +10,8 @@ namespace darknessNight::Multithreading
 		unsigned threadNumber;
 		Semaphore semaphore;
 		std::mutex elementsMutex;
-		std::list<std::shared_ptr<std::thread>> detachedThreads;
 		std::mutex threadsMutex;
+		bool working;
 	public:
 		ParallelJobExecutor() : threadNumber(GetCPUNumberOfThreads() - 1), semaphore(threadNumber)
 		{
@@ -26,6 +26,7 @@ namespace darknessNight::Multithreading
 		{
 			auto it = elements.begin();
 			auto end = elements.end();
+			working = true;
 
 			std::function<void()> task = [&]()
 			{
@@ -33,7 +34,7 @@ namespace darknessNight::Multithreading
 				while (true) {
 					auto element = GetElementAndIncrementIterator<T>(it, end);
 
-					if (element == nullptr) {
+					if (element == nullptr || working==false) {
 						WaitForMyThreads(threads);
 						return;
 					}
@@ -82,36 +83,14 @@ namespace darknessNight::Multithreading
 
 	public:
 
-		template <typename T>
-		void ForEachDetach(std::function<void(T&)> func, std::vector<T> &elements)
-		{
-			std::lock_guard<std::mutex> lock(threadsMutex);
-			detachedThreads.push_back(std::make_shared<std::thread>([&elements,func,this]()
-			{
-				ForEach(func, elements);
-				std::lock_guard<std::mutex> lock(threadsMutex);
-				detachedThreads.remove_if([](std::shared_ptr<std::thread> th) {return th->get_id() == std::this_thread::get_id(); });
-			}));
-		}
-
 		void Stop()
 		{
-			std::lock_guard<std::mutex> lock(threadsMutex);
-			detachedThreads.clear();
-		}
-
-		void WaitForDetached()
-		{
-			threadsMutex.lock();
-			auto copy = detachedThreads;
-			threadsMutex.unlock();
-			for (auto thread : copy)
-				if (thread->joinable())
-					thread->join();
+			working = false;
 		}
 
 		void SetNumberOfThreads(unsigned newThreadNumber)
 		{
+			if ( newThreadNumber == 0 )newThreadNumber = 1;
 			threadNumber = newThreadNumber;
 			semaphore.ChangeAccessLimit(threadNumber - 1);
 		}

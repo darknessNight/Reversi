@@ -8,14 +8,15 @@ GameController::GameController(GameWindow* handle)
 
 	int stany[8][8] = {
 		{ 1,1,1,1,1,1,1,1},
+		{ 1,1,1,1,1,1,1,2 },
+		{ 1,1,1,1,1,1,1,0 },
+		{ 1,1,0,0,0,1,1,1 },
+		{ 1,1,0,2,0,2,0,0 },
+		{ 1,1,0,0,0,0,2,1 },
 		{ 1,1,1,1,1,1,1,1 },
 		{ 1,1,1,1,1,1,1,1 },
-		{ 1,1,1,1,1,1,1,1 },
-		{ 1,1,1,2,1,1,1,1 },
-		{ 1,1,0,1,1,1,1,1 },
-		{ 2,2,0,1,1,1,1,1 },
-		{ 0,0,0,2,2,1,1,1 },
 	};
+	
 
 	for ( int i = 0; i < 8; i++ )
 	{
@@ -111,6 +112,7 @@ void GameController::mainLoop()
 					{//kolejny gracz straci³ ruch, jeszcze raz ten sam
 						if ( playerNumber == PlayerColor::BlackPlayer )
 						{//znowu czarny
+							siPlayer.PassMove(gameBoard);
 							communicate = L"Bia³y traci ruch. Ruch czarnego. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";

@@ -47,12 +47,17 @@ namespace Reversi
 	public:
 		virtual void StartMove(GameBoard board)
 		{
-			if(!lastMoveSI )
-				minmax.GetBestMove();
 			lastMoveSI = false;
 			lastState=GameBoardConverter::ConvertToBoardState(board);
 			minmax.SetOpponentMove(lastState);
 			minmax.GetBestMoveAsync(getAsyncFunc());
+		}
+
+		virtual void PassMove(GameBoard board)
+		{
+			lastState = GameBoardConverter::ConvertToBoardState(board);
+			minmax.SetOpponentMove(lastState);
+			minmax.GetBestMove();
 		}
 	private:
 		std::function<void(const SI::Reversi::BoardState&)> getAsyncFunc()

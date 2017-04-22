@@ -136,29 +136,5 @@ namespace SI::Reversi::Tests
 			auto result = jobs.GetCountOfFreeThreads();
 			Assert::AreEqual(2u, result);
 		}
-
-		TEST_METHOD(ForEachDetach_HasFourThreadParallelJobAndSleepAction_CheckDoActionForFourElements)
-		{
-			ParallelJobExecutor jobs;
-			jobs.SetNumberOfThreads(4);
-			std::vector<int> elements = { 1,2,3,4 };
-
-			jobs.ForEachDetach<int>([](int &el)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				el++;
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
-			}, elements);
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(15));
-
-
-
-			auto result = elements;
-			std::vector<int> expected({ 2,3,4,5 });
-
-			jobs.WaitForDetached();
-			Assert::AreEqual(expected, result);
-		}
 	};
 }
