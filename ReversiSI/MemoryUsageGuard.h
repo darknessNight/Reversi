@@ -8,7 +8,7 @@ namespace darknessNight
 	class MemoryUsageGuard
 	{
 	private:
-		long long memoryBuffor = 1024 * 1024 * 1024;//1GB
+		long long memoryBuffor = 10 * 1024 * 1024;//0,01GB
 	public:
 		static long long GetMemoryLimit()
 		{
@@ -60,3 +60,6 @@ namespace darknessNight
 		}
 	};
 }
+
+#undef max
+#undef min

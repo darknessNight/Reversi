@@ -6,7 +6,7 @@ void GameWindow::start() {
 	shouldRedrawWindow = false;
 	canClick = true;
 	this->window.create(sf::VideoMode(8*SQUARESIZE, 8*SQUARESIZE+100), "Reversi", sf::Style::Close);
-	this->window.setPosition(sf::Vector2i(0, 0));
+	this->window.setPosition(sf::Vector2i(700, 100));
 	GameController gameController(this);
 	int temporaryX, temporaryY;
 	

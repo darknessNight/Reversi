@@ -13,6 +13,7 @@ class GameController {
 private:
 	const unsigned minTreeDepth = 2;
 	const int gameMode = 1;
+	bool gameEnded = false;
 public:
 	GameController(GameWindow* handle);
 	void pawnPlaced(int x, int y);
