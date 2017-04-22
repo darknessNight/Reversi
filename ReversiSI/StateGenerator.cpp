@@ -205,22 +205,22 @@ void SI::Reversi::StateGenerator::checkDiagonalLineNE_SW(unsigned int x, unsigne
 }
 
 bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(BoardStateMemoryOptimized::State fieldState, 
-	bool* ownPieceFoundAfterOpponentPiece, bool* ownPieceFound, bool *foundGap)
+	bool* opponentPieceFound, bool* ownPieceFoundAfterOpponentPiece, bool *foundGap)
 {
-	if (fieldState != this->nextPlayer && fieldState != BoardStateMemoryOptimized::State::Empty && !*ownPieceFoundAfterOpponentPiece) {
+	if (fieldState != this->nextPlayer && fieldState != BoardStateMemoryOptimized::State::Empty && !*opponentPieceFound) {
+		*opponentPieceFound = true;
+	}
+	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
 		*ownPieceFoundAfterOpponentPiece = true;
 	}
-	else if (fieldState == this->nextPlayer && *ownPieceFoundAfterOpponentPiece) {
-		*ownPieceFound = true;
-	}
-	else if (fieldState == this->nextPlayer && *ownPieceFoundAfterOpponentPiece) {
+	else if (fieldState == this->nextPlayer && *opponentPieceFound) {
 		return false;
 	}
-	else if (fieldState == BoardStateMemoryOptimized::State::Empty && *ownPieceFoundAfterOpponentPiece && !*ownPieceFound) {
+	else if (fieldState == BoardStateMemoryOptimized::State::Empty && *opponentPieceFound && !*ownPieceFoundAfterOpponentPiece &&
+		!*foundGap) {
 		return true;
 	}
-	else if (fieldState == BoardStateMemoryOptimized::State::Empty && !*ownPieceFoundAfterOpponentPiece && 
-		!*ownPieceFoundAfterOpponentPiece) {
+	else if (fieldState == BoardStateMemoryOptimized::State::Empty && !*opponentPieceFound && !*opponentPieceFound) {
 		*foundGap = true;
 	}
 	return false;
@@ -229,13 +229,8 @@ bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(BoardStateMemoryO
 void SI::Reversi::StateGenerator::generateNewStatesBasedOnFoundPoints()
 {
 	for (unsigned int i = 0; i < foundFields->size(); i++) {
-		
-		int xDifference = abs(foundFields->at(i).currX - foundFields->at(i).newX);
-		int yDifference = abs(foundFields->at(i).currY - foundFields->at(i).newY);
-		if (validateMove(xDifference, yDifference)) {
-			this->nextMapStates->push_back(BoardState(this->currentState));
-			setNewFieldState(i);
-		}
+		this->nextMapStates->push_back(BoardState(this->currentState));
+		setNewFieldState(i);
 	}
 }
 
@@ -244,13 +239,14 @@ void SI::Reversi::StateGenerator::setNewFieldState(int i)
 	PossibleAndCurrentFields currentFields = foundFields->at(i);
 	std::vector<PossibleAndCurrentFields> fieldsWithSameDestination = getAndRemoveDuplicates(currentFields);
 
-	unsigned int incrementX, incrementY, x, y, xDifference, yDifference;
+	unsigned int x, y, xDifference, yDifference;
+	int incrementX, incrementY;
 	
 	for (unsigned int k = 0; k < fieldsWithSameDestination.size(); k++)
 	{
 		currentFields = fieldsWithSameDestination.at(k);
-		xDifference = abs(currentFields.currX - currentFields.newX);
-		yDifference = abs(currentFields.currY - currentFields.newY);
+		xDifference = max(currentFields.currX, currentFields.newX) - min(currentFields.currX, currentFields.newX);
+		yDifference = max(currentFields.currY, currentFields.newY) - min(currentFields.currY, currentFields.newY);
 		x = currentFields.currX;
 		y = currentFields.currY;
 		setIncrementalValuesAccordingToDirection(&incrementX, &incrementY, currentFields.direction);
@@ -279,7 +275,7 @@ bool SI::Reversi::StateGenerator::validateMove(int xDifference, int yDifference)
 	return true;
 }
 
-void SI::Reversi::StateGenerator::setIncrementalValuesAccordingToDirection(unsigned int* x, unsigned int* y, 
+void SI::Reversi::StateGenerator::setIncrementalValuesAccordingToDirection(int* x, int* y, 
 	LineDirection direction)
 {
 	switch (direction) {
@@ -325,8 +321,10 @@ std::vector<StateGenerator::PossibleAndCurrentFields> SI::Reversi::StateGenerato
 		if (foundFields->at(i).newX == currentFields.newX && foundFields->at(i).newY == currentFields.newY) 
 		{
 			Duplicates.push_back(foundFields->at(i));
-			if (Duplicates.size() > 1)
+			if (Duplicates.size() > 1) {
 				foundFields->erase(foundFields->begin() + i);
+				i--;
+			}
 		}
 	}
 	return std::vector<PossibleAndCurrentFields>(Duplicates);
