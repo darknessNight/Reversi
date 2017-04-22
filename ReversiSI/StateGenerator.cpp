@@ -229,13 +229,8 @@ bool SI::Reversi::StateGenerator::checkMovePossibillityOnField(BoardStateMemoryO
 void SI::Reversi::StateGenerator::generateNewStatesBasedOnFoundPoints()
 {
 	for (unsigned int i = 0; i < foundFields->size(); i++) {
-		
-		int xDifference = max(foundFields->at(i).currX, foundFields->at(i).newX) - min(foundFields->at(i).currX, foundFields->at(i).newX);
-		int yDifference = max(foundFields->at(i).currY, foundFields->at(i).newY) - max(foundFields->at(i).currY, foundFields->at(i).newY);
-		if (validateMove(xDifference, yDifference)) {
-			this->nextMapStates->push_back(BoardState(this->currentState));
-			setNewFieldState(i);
-		}
+		this->nextMapStates->push_back(BoardState(this->currentState));
+		setNewFieldState(i);
 	}
 }
 
