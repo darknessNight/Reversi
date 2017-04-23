@@ -12,10 +12,10 @@ namespace Reversi
 		SI::Reversi::MinMax minmax;
 		SI::Reversi::BoardState::FieldState playerState;
 		SI::Reversi::BoardState lastState;
-		const int C = 500;
-		const int E = 50;
-		const int M = 10;
-		const int R = 5;
+		const int C = 10000000;
+		const int E = 100;
+		const int M = 50;
+		const int R = 10;
 		const int B = 1;
 		const int weightsOfSquares[8][8] = {
 			{ C,E,E,E,E,E,E,C },
