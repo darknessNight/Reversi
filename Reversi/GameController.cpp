@@ -60,14 +60,18 @@ void GameController::pawnPlaced(int x, int y)
 void GameController::mainLoop()
 {
 	PlayerColor oppsitePlayer;
-	//Reversi::SiPlayer siPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
-	siPlayer = new Reversi::SiPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
-	bool askSI = true;
+	bool askSI;
 
-	siPlayer->setCallback([&] (int x, int y) {
-		this->pawnPlaced(x, y);
+	if (gameMode == 1) {
+		siPlayer = new Reversi::SiPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+
 		askSI = true;
-	});
+
+		siPlayer->setCallback([&](int x, int y) {
+			this->pawnPlaced(x, y);
+			askSI = true;
+		});
+	}
 
 	while ( continueLoop )
 	{
@@ -178,7 +182,10 @@ void GameController::mainLoop()
 		}
 		_sleep(100);
 	}
-	delete siPlayer;
+
+	if (gameMode == 1) {
+		delete siPlayer;
+	}
 }
 
 
