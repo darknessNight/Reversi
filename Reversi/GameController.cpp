@@ -60,7 +60,6 @@ void GameController::pawnPlaced(int x, int y)
 void GameController::mainLoop()
 {
 	PlayerColor oppsitePlayer;
-	bool askSI;
 
 	if (gameMode == 1) {
 		siPlayer = std::make_shared<Reversi::SiPlayer>(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
@@ -381,6 +380,15 @@ void GameController::reset()
 	this->playerNumber = PlayerColor::BlackPlayer;
 	
 	siPlayer = std::make_shared<Reversi::SiPlayer>(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+
+	if (gameMode == 1) {
+		siPlayer = nullptr;
+		siPlayer = std::make_shared<Reversi::SiPlayer>(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+		siPlayer->setCallback([&](int x, int y) {
+			this->pawnPlaced(x, y);
+			askSI = true;
+		});
+	}
 
 	gameEnded = false;
 }
