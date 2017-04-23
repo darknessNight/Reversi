@@ -11,7 +11,7 @@ class GameWindow;
 
 class GameController {
 private:
-	const unsigned minTreeDepth = 2;
+	const unsigned minTreeDepth = 3;
 	const int gameMode = 1;
 	bool gameEnded = false;
 	std::shared_ptr<Reversi::SiPlayer> siPlayer;

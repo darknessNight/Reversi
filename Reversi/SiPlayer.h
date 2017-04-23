@@ -12,6 +12,22 @@ namespace Reversi
 		SI::Reversi::MinMax minmax;
 		SI::Reversi::BoardState::FieldState playerState;
 		SI::Reversi::BoardState lastState;
+		const int C = 500;
+		const int E = 50;
+		const int M = 10;
+		const int R = 5;
+		const int B = 1;
+		const int weightsOfSquares[8][8] = {
+			{ C,E,E,E,E,E,E,C },
+			{ E,B,B,B,B,B,B,E },
+			{ E,B,M,M,M,M,B,E },
+			{ E,B,M,R,R,M,B,E },
+			{ E,B,M,R,R,M,B,E },
+			{ E,B,M,M,M,M,B,E },
+			{ E,B,B,B,B,B,B,E },
+			{ C,E,E,E,E,E,E,C },
+		};
+
 	public:
 		SiPlayer(GameBoard startState, PlayerColor playerColor, unsigned minDepth)
 			:minmax(GameBoardConverter::ConvertToBoardState(startState),
@@ -39,8 +55,8 @@ namespace Reversi
 					{
 
 					}
-					else if ( fieldState == playerState ) result += 1;
-					else result -= 1;
+					else if ( fieldState == playerState ) result += weightsOfSquares[i][j];
+					else result -= weightsOfSquares[i][j];
 				}
 			return result;
 		}
