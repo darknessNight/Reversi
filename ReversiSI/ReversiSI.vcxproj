@@ -28,6 +28,7 @@
     <ClInclude Include="MinMax.h" />
     <ClInclude Include="Multithreading\ParallelJobExecutor.h" />
     <ClInclude Include="Multithreading\Semaphore.h" />
+    <ClInclude Include="Multithreading\shared_mutex_lock_priority.h" />
     <ClInclude Include="StateGenerator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

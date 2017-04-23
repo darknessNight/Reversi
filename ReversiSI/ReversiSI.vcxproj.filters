@@ -44,5 +44,8 @@
     <ClInclude Include="MemoryUsageGuard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Multithreading\shared_mutex_lock_priority.h">
+      <Filter>Header Files\Multithreading</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

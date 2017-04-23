@@ -1,14 +1,11 @@
 ﻿#pragma once
 #include "StateGenerator.h"
 #include "Multithreading/ParallelJobExecutor.h"
+#include "Multithreading/shared_mutex_lock_priority.h"
 #include "MemoryUsageGuard.h"
 #include <functional>
 #include <atomic>
 #include <iostream>
-
-/*namespace std {
-	typedef shared_timed_mutex shared_mutex;
-}*/
 
 typedef bool POZIOM_ZAJEBISTOSCI;
 #define ZAJEBISTOSC true
@@ -16,11 +13,9 @@ typedef bool POZIOM_ZAJEBISTOSCI;
 
 #define ZAJEBISTOSCI_NIE_ZMIENISZ const
 
-//using darknessNight_Multithreading::ParallelJobExecutor;
-using darknessNight::Multithreading::ParallelJobExecutor;
+using namespace darknessNight::Multithreading;
 
 namespace SI::Reversi {
-//namespace SI_Reversi {
 	class MinMax {
 		ZAJEBISTOSCI_NIE_ZMIENISZ POZIOM_ZAJEBISTOSCI SUPER_EXTRA_ZAJEBISTY_CONST = ZAJEBISTOSC;//TUTAJ JEST ZAJEBISTY CONST
 	protected:
@@ -72,7 +67,7 @@ namespace SI::Reversi {
 		unsigned minimumDepth;
 		unsigned currentDepth=1;
 		std::shared_ptr<ParallelJobExecutor> executor;
-		std::shared_ptr<std::shared_mutex> currentStateMutex = std::make_shared<std::shared_mutex>();
+		std::shared_ptr<shared_mutex_lock_priority> currentStateMutex = std::make_shared<shared_mutex_lock_priority>();
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
 		bool restart = false;
@@ -171,38 +166,31 @@ namespace SI::Reversi {
 			int child = 1;
 			std::mutex mutex;
 			levels[parent].push_back(currentState);
-			int darkSoulIt;
 			while (working) {
-				darkSoulIt = 0;
 				executor->ForEach<std::shared_ptr<MinMaxNode>>([&](std::shared_ptr<MinMaxNode>& next)
 				{
-					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
-					mutex.lock();
-					if ( next->parent.expired() ) darkSoulIt++;
-					mutex.unlock();
+					std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
 					minmax(next, levels[child], mutex);
 				}, levels[parent]);
 
-				std::cout <<"Unnecesary iterations: "<< darkSoulIt << " Count of childrens: " << levels[child].size() << "; Level: "<<currentDepth
+				std::cout << "Count of childrens: " << levels[child].size() << "; Level: "<<currentDepth
 					<<" Available memory:" << memoryGuard.GetAllAvailableMemory()/1024.0/1024.0<<" MB"<<"\n";
 
 				currentDepth++;
 				parent = (parent + 1) % 2;
 				child = (child + 1) % 2;
+				levels[child].clear();
 
-				{
-					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
-					levels[child].clear();
-				}
-
-				do
-				if ( restart )
-				{
-					std::cout << "Start restarting\n";
-					std::shared_lock<std::shared_mutex> lock(*currentStateMutex);
-					AppendAllChildren(levels[parent]);
-					restart = false;
-					std::cout << "Ended restarting\n";
+				do {
+					if (restart)
+					{
+						std::cout << "Start restarting\n";
+						std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
+						AppendAllChildren(levels[parent]);
+						restart = false;
+						std::cout << "Ended restarting\n";
+					}
+					std::this_thread::sleep_for(std::chrono::microseconds(100));
 				}
 				while (levels[parent].empty() && working);
 			}
@@ -323,7 +311,8 @@ namespace SI::Reversi {
 			if (currentPlayer == siPlayer)
 				throw std::exception("It's move of SI");
 
-			std::lock_guard<std::shared_mutex> lock(*currentStateMutex);
+			std::lock_guard<shared_mutex_lock_priority> lock(*currentStateMutex);
+			std::cout << ">>Wpycham mu ruch do gardla. AfterMutex\n";
 			for (auto el : currentState->children)
 			{
 				if (el->state==opponentMove)
