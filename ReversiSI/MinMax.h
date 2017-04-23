@@ -227,6 +227,8 @@ namespace SI::Reversi {
 			if ( node->parent.expired() && !node->IsRoot() )
 				return;
 
+			auto parent = node->parent.lock();
+
 			auto generator = generatorFabric(node->state, node->maximizing?siPlayer:GetNotSiPlayer());
 
 
@@ -249,7 +251,7 @@ namespace SI::Reversi {
 
 			auto nexts=generator->GetAllNextStates();
 			
-			if (alphaBetaAlgorithm &&!node->root && currentDepth>2 && betaHeur(node->state, node->parent.lock()->state)) return;
+			if (alphaBetaAlgorithm &&!node->root && currentDepth>2 && betaHeur(node->state, parent->state)) return;
 			for(auto el: nexts)
 			{
 				memoryGuard.WaitForAvailableMemeory();
