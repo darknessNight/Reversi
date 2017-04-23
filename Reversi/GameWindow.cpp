@@ -42,6 +42,9 @@ void GameWindow::start() {
 				if (event.key.code == sf::Keyboard::R) {
 					gameController.reset();
 				}
+				else if (event.key.code == sf::Keyboard::H) {
+					draw(gameController.getGameBoard(), gameController.getCommunicate(), true, gameController.getMapOfPossibleMoves());
+				}
 			}
 		}
 
@@ -54,7 +57,7 @@ void GameWindow::start() {
 }
 
 
-void GameWindow::draw(GameBoard gameBoard, sf::String communicate) {
+void GameWindow::draw(GameBoard gameBoard, sf::String communicate, bool drawHelp, GameBoard mapOfPossibleMoves) {
 	sf::RectangleShape board(sf::Vector2f(8*SQUARESIZE, 8*SQUARESIZE));
 	sf::Texture boardTexture;
 	boardTexture.loadFromFile("BoardTexture.png");
@@ -88,6 +91,13 @@ void GameWindow::draw(GameBoard gameBoard, sf::String communicate) {
 				pawn.setFillColor(sf::Color::Black);
 				pawn.setPosition(sf::Vector2f(i*SQUARESIZE + 1, j*SQUARESIZE + 1));
 				window.draw(pawn);
+			}
+			if (drawHelp) {
+				if (mapOfPossibleMoves.getSquare(i, j) == PlayerColor::BlackPlayer) {
+					pawn.setFillColor(sf::Color::Cyan);
+					pawn.setPosition(sf::Vector2f(i*SQUARESIZE + 1, j*SQUARESIZE + 1));
+					window.draw(pawn);
+				}
 			}
 		}
 	}

@@ -392,3 +392,21 @@ void GameController::reset()
 
 	gameEnded = false;
 }
+
+
+GameBoard GameController::getMapOfPossibleMoves() {
+	GameBoard mapOfPossibleMoves;
+
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			if (checkIfMoveIsLegal(x, y, playerNumber)) {
+				mapOfPossibleMoves.setSquare(x, y, PlayerColor::BlackPlayer);
+			}
+			else {
+				mapOfPossibleMoves.setSquare(x, y, PlayerColor::EmptyField);
+			}
+		}
+	}
+
+	return mapOfPossibleMoves;
+}

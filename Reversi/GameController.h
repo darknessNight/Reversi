@@ -23,6 +23,7 @@ public:
 	sf::String getCommunicate();
 	GameBoard getGameBoard();
 	void reset();
+	GameBoard getMapOfPossibleMoves();
 private:
 	GameWindow* handle;
 	GameBoard gameBoard;
