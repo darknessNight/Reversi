@@ -17,7 +17,7 @@ using namespace darknessNight::Multithreading;
 
 namespace SI::Reversi {
 	class MinMax {
-		ZAJEBISTOSCI_NIE_ZMIENISZ POZIOM_ZAJEBISTOSCI SUPER_EXTRA_ZAJEBISTY_CONST = NIE_ZAJEBISTOSC;//TUTAJ JEST ZAJEBISTY CONST
+		ZAJEBISTOSCI_NIE_ZMIENISZ POZIOM_ZAJEBISTOSCI SUPER_EXTRA_ZAJEBISTY_CONST = ZAJEBISTOSC;//TUTAJ JEST ZAJEBISTY CONST
 	protected:
 		struct MinMaxNode
 		{
@@ -72,6 +72,7 @@ namespace SI::Reversi {
 		std::shared_ptr<std::thread> algorithmThread;
 		bool working = true;
 		bool restart = false;
+		bool reachEnd = false;
 		bool alphaBetaAlgorithm = SUPER_EXTRA_ZAJEBISTY_CONST;
 		darknessNight::MemoryUsageGuard memoryGuard;
 
@@ -117,7 +118,7 @@ namespace SI::Reversi {
 			std::cout << "Waiting for depth\n";
 			std::cout << "Current depth: " << (unsigned)currentDepth << "\n";
 
-			while((unsigned)currentDepth<minimumDepth)
+			while((unsigned)currentDepth<minimumDepth && !reachEnd)
 			{
 				std::this_thread::sleep_for(std::chrono::microseconds(100));
 			}
@@ -183,9 +184,11 @@ namespace SI::Reversi {
 				child = (child + 1) % 2;
 				levels[child].clear();
 
+				if (levels[parent].empty())reachEnd = true;
 				do {
 					if (restart)
 					{
+						reachEnd = false;
 						std::cout << "Start restarting\n";
 						std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
 						levels[parent].clear();
