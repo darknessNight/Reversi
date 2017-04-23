@@ -27,6 +27,7 @@ namespace SI::Reversi {
 			std::weak_ptr<MinMaxNode> parent;
 			std::vector<std::shared_ptr<MinMaxNode>> children;
 			bool root = false;
+			bool deleted = false;
 
 			MinMaxNode(const BoardState& state, bool maximizing = false)
 				:value((maximizing ? -1 : 1) * std::numeric_limits<double>::max()), maximizing(maximizing), state(state)
@@ -65,7 +66,7 @@ namespace SI::Reversi {
 		std::function<std::shared_ptr<StateGenerator>(const BoardState&, BoardState::FieldState)> generatorFabric;
 		std::function<bool(BoardState, BoardState)> betaHeur;
 		unsigned minimumDepth;
-		unsigned currentDepth=1;
+		std::atomic<unsigned > currentDepth = 0;
 		std::shared_ptr<ParallelJobExecutor> executor;
 		std::shared_ptr<shared_mutex_lock_priority> currentStateMutex = std::make_shared<shared_mutex_lock_priority>();
 		std::shared_ptr<std::thread> algorithmThread;
@@ -114,9 +115,9 @@ namespace SI::Reversi {
 			CheckAndPrepare();
 
 			std::cout << "Waiting for depth\n";
-			std::cout << "Current depth: " << currentDepth << "\n";
+			std::cout << "Current depth: " << (unsigned)currentDepth << "\n";
 
-			while(currentDepth<minimumDepth)
+			while((unsigned)currentDepth<minimumDepth)
 			{
 				std::this_thread::sleep_for(std::chrono::microseconds(100));
 			}
@@ -173,10 +174,11 @@ namespace SI::Reversi {
 					minmax(next, levels[child], mutex);
 				}, levels[parent]);
 
-				std::cout << "Count of childrens: " << levels[child].size() << "; Level: "<<currentDepth
-					<<" Available memory:" << memoryGuard.GetAllAvailableMemory()/1024.0/1024.0<<" MB"<<"\n";
+				currentDepth=currentDepth+1;
 
-				currentDepth++;
+				std::cout << "Count of childrens: " << levels[child].size() << "; Level: " << (unsigned)currentDepth
+					<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB" << "\n";
+
 				parent = (parent + 1) % 2;
 				child = (child + 1) % 2;
 				levels[child].clear();
@@ -186,9 +188,12 @@ namespace SI::Reversi {
 					{
 						std::cout << "Start restarting\n";
 						std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
+						levels[parent].clear();
 						AppendAllChildren(levels[parent]);
 						restart = false;
 						std::cout << "Ended restarting\n";
+						std::cout << "Count of childrens: " << levels[parent].size() << "; Current level after restart: " << (unsigned)currentDepth
+							<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB" << "\n";
 					}
 					std::this_thread::sleep_for(std::chrono::microseconds(100));
 				}
@@ -204,22 +209,26 @@ namespace SI::Reversi {
 			int childLevel = 1;
 			std::mutex mutex;
 			levels[parentLevel].push_back(currentState);
+			currentDepth = 0;
 			while ( !levels[parentLevel].empty() )
 			{
 				for ( auto node : levels[parentLevel] )
 				{
-					if ( node->children.empty() )
+					if (node->children.empty() || node->deleted) {
+						node->deleted = false;
 						parents.push_back(node);
+					}
 					for ( auto child : node->children )
 					{
 						levels[childLevel].push_back(child);
 					}
 				}
-
+				currentDepth = currentDepth + 1;
 				parentLevel = (parentLevel + 1) % 2;
 				childLevel = (childLevel + 1) % 2;
 				levels[childLevel].clear();
 			}
+			currentDepth = currentDepth - 1;
 		}
 
 		void minmax(std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> &children, std::mutex &mutex) const
@@ -235,9 +244,11 @@ namespace SI::Reversi {
 			if (!generator->HasNextState()) {
 				if ( node->parent.expired() )
 					return;
-				auto parentGenerator = generatorFabric(node->parent.lock()->state, node->parent.lock()->maximizing ? siPlayer : GetNotSiPlayer());
-				if ( !parentGenerator->HasNextState() )
-					return;
+				{
+					auto parentGenerator = generatorFabric(node->parent.lock()->state, node->parent.lock()->maximizing ? siPlayer : GetNotSiPlayer());
+					if (!parentGenerator->HasNextState())
+						return;
+				}
 
 				std::lock_guard<std::mutex> lock(mutex);
 				auto newNode = std::make_shared<MinMaxNode>(*node);
@@ -251,7 +262,10 @@ namespace SI::Reversi {
 
 			auto nexts=generator->GetAllNextStates();
 			
-			if (alphaBetaAlgorithm &&!node->root && currentDepth>2 && betaHeur(node->state, parent->state)) return;
+			if (alphaBetaAlgorithm && !node->root  && betaHeur(node->state, parent->state)) {
+				node->deleted = true;
+				return;
+			}
 			for(auto el: nexts)
 			{
 				memoryGuard.WaitForAvailableMemeory();
@@ -379,12 +393,13 @@ namespace SI::Reversi {
 			currentPlayer = static_cast<BoardState::FieldState>((currentPlayer + 1) % BoardState::FieldState::Unknown);
 			if (currentPlayer == BoardState::FieldState::Empty)
 				currentPlayer = BoardState::FieldState::Player1;
-			currentDepth--;
+			currentDepth=currentDepth-1;
+			std::cout << "Decrease level of tree. New level " << (unsigned)currentDepth <<"\n";
 		}
 	public:
 		unsigned GetCurrentDepth() const
 		{
-			return currentDepth;
+			return (unsigned)currentDepth;
 		}
 		protected:
 			bool DefaultBetaHeur(BoardState current, BoardState next)
