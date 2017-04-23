@@ -378,8 +378,6 @@ void GameController::reset()
 	this->handle->doDraw();
 
 	this->playerNumber = PlayerColor::BlackPlayer;
-	
-	siPlayer = std::make_shared<Reversi::SiPlayer>(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
 
 	if (gameMode == 1) {
 		siPlayer = nullptr;
@@ -389,6 +387,8 @@ void GameController::reset()
 			askSI = true;
 		});
 	}
+
+	handle->allowToClick();
 
 	gameEnded = false;
 }
