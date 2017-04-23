@@ -15,6 +15,7 @@ private:
 	const int gameMode = 1;
 	bool gameEnded = false;
 	std::shared_ptr<Reversi::SiPlayer> siPlayer;
+	bool askSI;
 public:
 	GameController(GameWindow* handle);
 	void pawnPlaced(int x, int y);
@@ -22,6 +23,7 @@ public:
 	sf::String getCommunicate();
 	GameBoard getGameBoard();
 	void reset();
+	GameBoard getMapOfPossibleMoves();
 private:
 	GameWindow* handle;
 	GameBoard gameBoard;
