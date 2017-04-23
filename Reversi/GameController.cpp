@@ -60,10 +60,11 @@ void GameController::pawnPlaced(int x, int y)
 void GameController::mainLoop()
 {
 	PlayerColor oppsitePlayer;
-	Reversi::SiPlayer siPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+	//Reversi::SiPlayer siPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
+	siPlayer = new Reversi::SiPlayer(gameBoard, PlayerColor::WhitePlayer, minTreeDepth);
 	bool askSI = true;
 
-	siPlayer.setCallback([&] (int x, int y) {
+	siPlayer->setCallback([&] (int x, int y) {
 		this->pawnPlaced(x, y);
 		askSI = true;
 	});
@@ -112,7 +113,7 @@ void GameController::mainLoop()
 					{//kolejny gracz straci³ ruch, jeszcze raz ten sam
 						if ( playerNumber == PlayerColor::BlackPlayer )
 						{//znowu czarny
-							siPlayer.PassMove(gameBoard);
+							siPlayer->PassMove(gameBoard);
 							communicate = L"Bia³y traci ruch. Ruch czarnego. Czarne:";
 							communicate += std::to_string(countPawns(PlayerColor::BlackPlayer));
 							communicate += L" Bia³e:";
@@ -169,7 +170,7 @@ void GameController::mainLoop()
 				else if ( askSI )
 				{
 					askSI = false;
-					siPlayer.StartMove(gameBoard);
+					siPlayer->StartMove(gameBoard);
 				}
 			}
 
@@ -177,6 +178,7 @@ void GameController::mainLoop()
 		}
 		_sleep(100);
 	}
+	delete siPlayer;
 }
 
 

@@ -39,7 +39,7 @@ void GameWindow::start() {
 				doDraw();
 			}
 			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::R && canClick) {
+				if (event.key.code == sf::Keyboard::R) {
 					gameController.reset();
 				}
 			}
