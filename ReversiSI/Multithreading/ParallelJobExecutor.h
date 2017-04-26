@@ -90,7 +90,7 @@ namespace darknessNight::Multithreading
 
 		void SetNumberOfThreads(unsigned newThreadNumber)
 		{
-			if ( newThreadNumber == 0 )newThreadNumber = 1;
+			if ( newThreadNumber <= 0 )newThreadNumber = 1;
 			threadNumber = newThreadNumber;
 			semaphore.ChangeAccessLimit(threadNumber - 1);
 		}
