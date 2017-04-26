@@ -46,6 +46,8 @@ namespace Reversi
 
 		double standardHeuristic(SI::Reversi::BoardState state)
 		{
+			unsigned playerStateCount = 0;
+			unsigned opponentStateCount = 0;
 			double result = 0;
 
 			for ( int i = 0; i < state.rowsCount; i++ )
@@ -56,9 +58,17 @@ namespace Reversi
 					{
 
 					}
-					else if ( fieldState == playerState ) result += weightsOfSquares[i][j];
-					else result -= weightsOfSquares[i][j];
+					else if (fieldState == playerState) {
+						result += weightsOfSquares[i][j];
+						playerStateCount++;
+					}
+					else {
+						result -= weightsOfSquares[i][j];
+						opponentStateCount++;
+					}
 				}
+			if (playerStateCount == 0) return -std::numeric_limits<double>::max();
+			if (opponentStateCount == 0) return std::numeric_limits<double>::max();
 			return result;
 		}
 
