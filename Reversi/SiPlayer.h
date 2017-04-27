@@ -35,7 +35,7 @@ namespace Reversi
 				getStandardHeuristic()), playerState(GameBoardConverter::ConvertColorToFieldState(playerColor)),
 			lastState(GameBoardConverter::ConvertToBoardState(startState))
 		{
-			minmax.SetBetaHeur([this](bool maximizing, double parentValue, SI::Reversi::BoardState second) {return standardBetaHeuristic(maximizing, parentValue, second); });
+			minmax.SetBetaHeur([this](bool maximizing, double parentValue, SI::Reversi::BoardState second, double nextVal) {return standardBetaHeuristic(maximizing, parentValue, second, nextVal); });
 			lastMoveSI = true;
 		}
 	private:
@@ -72,8 +72,8 @@ namespace Reversi
 			return result;
 		}
 
-		bool standardBetaHeuristic(bool maximizing, double parentValue, SI::Reversi::BoardState next) {
-			auto tmp = standardHeuristic(next);
+		bool standardBetaHeuristic(bool maximizing, double parentValue, SI::Reversi::BoardState next, double nextValue) {
+			auto tmp = nextValue;
 			auto result = parentValue > tmp;
 			if (std::abs(tmp - parentValue)<0.000001)
 				return false;
