@@ -268,7 +268,7 @@ namespace SI::Reversi {
 			AppendAllChildrens(generator, node, mutex, children);
 		}
 
-		void AddNodeForPassMove(std::mutex & mutex, std::shared_ptr<MinMaxNode> node, std::vector<std::shared_ptr<MinMaxNode>> children) const
+		void AddNodeForPassMove(std::mutex & mutex, std::shared_ptr<MinMaxNode>& node, std::vector<std::shared_ptr<MinMaxNode>>& children) const
 		{
 			std::lock_guard<std::mutex> lock(mutex);
 			auto newNode = std::make_shared<MinMaxNode>(*node);
@@ -280,7 +280,7 @@ namespace SI::Reversi {
 			RefreshParent(newNode);
 		}
 
-		bool IsNodeCutted(std::shared_ptr<MinMaxNode> node, std::shared_ptr<MinMaxNode> parent) const{
+		bool IsNodeCutted(std::shared_ptr<MinMaxNode>& node, std::shared_ptr<MinMaxNode>& parent) const{
 			if (alphaBetaAlgorithm && !node->root && node->depth>4)
 				if (betaHeur(parent->maximizing, parent->value, node->state, node->value)) {
 					node->deleted = true;
