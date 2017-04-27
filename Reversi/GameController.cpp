@@ -161,7 +161,6 @@ void GameController::mainLoop()
 			}
 			else
 			{
-
 			}
 
 			if ( !gameEnded )

@@ -35,6 +35,7 @@ namespace Reversi
 				getStandardHeuristic()), playerState(GameBoardConverter::ConvertColorToFieldState(playerColor)),
 			lastState(GameBoardConverter::ConvertToBoardState(startState))
 		{
+			minmax.SetBetaHeur([this](bool maximizing, double parentValue, SI::Reversi::BoardState second, double nextVal) {return standardBetaHeuristic(maximizing, parentValue, second, nextVal); });
 			lastMoveSI = true;
 		}
 	private:
@@ -45,6 +46,8 @@ namespace Reversi
 
 		double standardHeuristic(SI::Reversi::BoardState state)
 		{
+			unsigned playerStateCount = 0;
+			unsigned opponentStateCount = 0;
 			double result = 0;
 
 			for ( int i = 0; i < state.rowsCount; i++ )
@@ -55,10 +58,26 @@ namespace Reversi
 					{
 
 					}
-					else if ( fieldState == playerState ) result += weightsOfSquares[i][j];
-					else result -= weightsOfSquares[i][j];
+					else if (fieldState == playerState) {
+						result += weightsOfSquares[i][j];
+						playerStateCount++;
+					}
+					else {
+						result -= weightsOfSquares[i][j];
+						opponentStateCount++;
+					}
 				}
+			if (playerStateCount == 0) return -std::numeric_limits<double>::max();
+			if (opponentStateCount == 0) return std::numeric_limits<double>::max();
 			return result;
+		}
+
+		bool standardBetaHeuristic(bool maximizing, double parentValue, SI::Reversi::BoardState next, double nextValue) {
+			auto tmp = nextValue;
+			auto result = parentValue > tmp;
+			if (std::abs(tmp - parentValue)<0.000001)
+				return false;
+			return maximizing ? result : !result;
 		}
 	public:
 		virtual void StartMove(GameBoard board)

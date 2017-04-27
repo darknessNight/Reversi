@@ -7,11 +7,12 @@ using namespace SI::Reversi;
 
 std::vector<BoardState> SI::Reversi::StateGenerator::GetAllNextStates()
 {
-	Reset();
-	emptyAllVectors();
-	getAvaliableStatesForGivenField();
-	generateNewStatesBasedOnFoundPoints();
-
+	if (nextMapStates == nullptr) {
+		Reset();
+		emptyAllVectors();
+		getAvaliableStatesForGivenField();
+		generateNewStatesBasedOnFoundPoints();
+	}
 	return std::vector<BoardState>(*this->nextMapStates);
 }
 
