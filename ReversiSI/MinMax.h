@@ -84,7 +84,7 @@ namespace SI::Reversi {
 				minimumDepth(minDepth), executor(std::make_shared<ParallelJobExecutor>())
 		{
 			currentState->SetAsRoot();
-			algorithmThread = std::make_shared<std::thread>([&]() {FindBestMove(); });
+			algorithmThread = std::make_shared<std::thread>([&]() {CalcNextLevels(); });
 			executor->SetNumberOfThreads(executor->GetCPUNumberOfThreads() - 2);
 			betaHeur=[&](bool b1, double value, BoardState b2, double next) ->bool {return DefaultBetaHeur(b1, value, b2, next); };
 		}
@@ -113,39 +113,48 @@ namespace SI::Reversi {
 		}
 
 		BoardState GetBestMove() {
-			std::cout << ">>Checem ruch od SI\n;";
 			CheckAndPrepare();
 
-			std::cout << "Waiting for depth\n";
-			std::cout << "Current depth: " << (unsigned)currentDepth << "\n";
+			WaitForMinDepth();
 
-			while((unsigned)currentDepth<minimumDepth && !reachEnd)
-			{
-				std::this_thread::sleep_for(std::chrono::microseconds(100));
-			}
+			auto bestState = FindBestNextMove();
 
-			std::cout << "Try find best move\n";
-			auto bestValue = -std::numeric_limits<double>::max();
-			
-			auto bestState = currentState;
-			for (auto el : currentState->children)
-			{
-				if (bestValue<el->value)
-				{
-					bestState = el;
-					bestValue = el->value;
-				}
-			}
+			ChangeCurrentState(bestState);
+			return bestState->state;
+		}
 
-			std::cout << "Dealloc unreachable moves\n";
+		void ChangeCurrentState(std::shared_ptr<MinMaxNode> &bestState)
+		{
 			currentStateMutex->lock();
 			currentState = bestState;
 			currentState->SetAsRoot();
 			ResetMinMax();
 			currentStateMutex->unlock();
-			std::cout << "End of minmax\n";
-			std::cout << ">>Mam ruch od SI\n;";
-			return bestState->state;
+		}
+
+		std::shared_ptr<MinMaxNode> FindBestNextMove()
+		{
+			auto bestValue = -std::numeric_limits<double>::max();
+			auto bestState = currentState;
+
+			for ( auto el : currentState->children )
+			{
+				if ( bestValue<el->value )
+				{
+					bestState = el;
+					bestValue = el->value;
+				}
+			}
+			return bestState;
+		}
+
+		void WaitForMinDepth()
+		{
+			while ( (unsigned)currentDepth<minimumDepth && !reachEnd )
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(100));
+			}
+
 		}
 
 	protected:
@@ -162,7 +171,7 @@ namespace SI::Reversi {
 			IncrementPlayer();
 		}
 
-		void FindBestMove()
+		void CalcNextLevels()
 		{
 			std::vector<std::shared_ptr<MinMaxNode>> levels[2];
 			int parent = 0;
@@ -170,42 +179,49 @@ namespace SI::Reversi {
 			std::mutex mutex;
 			levels[parent].push_back(currentState);
 			while (working) {
-				auto start = std::chrono::high_resolution_clock::now();
-				executor->ForEach<std::shared_ptr<MinMaxNode>>([&](std::shared_ptr<MinMaxNode>& next)
-				{
-					std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
-					minmax(next, levels[child], mutex);
-				}, levels[parent]);
-				auto time =std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start);
-
-				currentDepth=currentDepth+1;
-
-				std::cout << "Count of childrens: " << levels[child].size() << "; Level: " << (unsigned)currentDepth
-					<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB Render time:"<< time.count()/1000.f << "ms\n";
-
+				CalcNextLevel(levels, child, mutex, parent);
 				parent = (parent + 1) % 2;
 				child = (child + 1) % 2;
 				levels[child].clear();
 
 				if (levels[parent].empty()) reachEnd = true;
 				do {
-					if (restart)
-					{
-						reachEnd = false;
-						std::cout << "Start restarting\n";
-						std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
-						levels[parent].clear();
-						AppendAllChildren(levels[parent]);
-						restart = false;
-						std::cout << "Ended restarting\n";
-						std::cout << "Count of childrens: " << levels[parent].size() << "; Current level after restart: " << (unsigned)currentDepth
-							<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB" << "\n";
-					}
+					RestartCalcing(levels, parent);
 					std::this_thread::sleep_for(std::chrono::microseconds(100));
 				}
 				while (levels[parent].empty() && working);
 			}
 			std::cout << "Ended game\n";
+		}
+
+		void CalcNextLevel(std::vector<std::shared_ptr<SI::Reversi::MinMax::MinMaxNode>>  *levels, int child, std::mutex &mutex, int parent)
+		{
+			auto start = std::chrono::high_resolution_clock::now();
+			executor->ForEach<std::shared_ptr<MinMaxNode>>([&] (std::shared_ptr<MinMaxNode>& next) {
+				std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
+				minmax(next, levels[child], mutex);
+			}, levels[parent]);
+			auto time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
+
+			currentDepth = currentDepth + 1;
+
+			std::cout << "Count of childrens: " << levels[child].size() << "; Level: " << (unsigned)currentDepth
+				<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB Render time:" << time.count() / 1000.f << "ms\n";
+
+		}
+
+		void RestartCalcing(std::vector<std::shared_ptr<SI::Reversi::MinMax::MinMaxNode>> *levels, int parent)
+		{
+			if ( restart )
+			{
+				reachEnd = false;
+				std::shared_lock<shared_mutex_lock_priority> lock(*currentStateMutex);
+				levels[parent].clear();
+				AppendAllChildren(levels[parent]);
+				restart = false;
+				std::cout << "Count of childrens: " << levels[parent].size() << "; Current level after restart: " << (unsigned)currentDepth
+					<< " Available memory:" << memoryGuard.GetAllAvailableMemory() / 1024.0 / 1024.0 << " MB" << "\n";
+			}
 		}
 
 		void AppendAllChildren(std::vector<std::shared_ptr<MinMaxNode>> &parents)
@@ -219,23 +235,29 @@ namespace SI::Reversi {
 			currentDepth = std::numeric_limits<unsigned>::max();
 			while ( !levels[parentLevel].empty() )
 			{
-				for ( auto node : levels[parentLevel] )
-				{
-					if (node->children.empty() || node->deleted) {
-						node->deleted = false;
-						currentDepth = min(currentDepth, node->depth);
-						parents.push_back(node);
-					}
-					for ( auto child : node->children )
-					{
-						child->depth = node->depth + 1;
-						levels[childLevel].push_back(child);
-					}
-				}
+				AppendNodes(levels, parentLevel, parents, childLevel);
 				currentDepth = currentDepth + 1;
 				parentLevel = (parentLevel + 1) % 2;
 				childLevel = (childLevel + 1) % 2;
 				levels[childLevel].clear();
+			}
+		}
+
+		void AppendNodes(std::vector<std::shared_ptr<SI::Reversi::MinMax::MinMaxNode>>  *levels, int parentLevel, std::vector<std::shared_ptr<SI::Reversi::MinMax::MinMaxNode>> & parents, int childLevel)
+		{
+			for ( auto node : levels[parentLevel] )
+			{
+				if ( node->children.empty() || node->deleted )
+				{
+					node->deleted = false;
+					currentDepth = min(currentDepth, node->depth);
+					parents.push_back(node);
+				}
+				for ( auto child : node->children )
+				{
+					child->depth = node->depth + 1;
+					levels[childLevel].push_back(child);
+				}
 			}
 		}
 
@@ -350,67 +372,22 @@ namespace SI::Reversi {
 		}
 
 		void SetOpponentMove(const BoardState& opponentMove) {
-			std::cout << ">>Wpycham mu ruch do gardla\n;";
 			if (currentPlayer == siPlayer)
 				throw std::exception("It's move of SI");
 
 			std::lock_guard<shared_mutex_lock_priority> lock(*currentStateMutex);
-			std::cout << ">>Wpycham mu ruch do gardla. AfterMutex\n";
 			for (auto el : currentState->children)
 			{
 				if (el->state==opponentMove)
 				{
-					std::cout << "Found passing opponet move\nTry dealloc\n";
 					currentState = el;
-					std::cout << "Deallocated\n";
 					currentState->SetAsRoot();
 					IncrementPlayer();
 					ResetMinMax();
-					std::cout << ">>Wepchnalem mu ruch do gardla\n;";
 					return;
 				}
 			}
 
-			auto nextStates = generatorFabric(currentState->state, GetNotSiPlayer())->GetAllNextStates();
-			for ( auto el : nextStates )
-			{
-				if ( el == opponentMove )
-				{
-					for ( int i = 0; i < opponentMove.rowsCount; i++ )
-					{
-						for ( int j = 0; j < opponentMove.colsCount; j++ )
-							std::cout << (int)el.GetFieldState(j, i);
-						std::cout << "\n";
-					}
-					std::cout << "----------------------\n";
-				}
-			}
-
-			std::cout << "Opponent move:-----------\n";
-			for ( int i = 0; i < opponentMove.rowsCount; i++ )
-			{
-				for ( int j = 0; j < opponentMove.colsCount; j++ )
-					std::cout << (int)opponentMove.GetFieldState(j,i);
-				std::cout << "\n";
-			}
-			std::cout << "Current move:-----------\n";
-			for ( int i = 0; i < opponentMove.rowsCount; i++ )
-			{
-				for ( int j = 0; j < opponentMove.colsCount; j++ )
-					std::cout << (int)currentState->state.GetFieldState(j,i);
-				std::cout << "\n";
-			}
-			std::cout << "Child moves:-----------\n";
-			for ( auto el : currentState->children )
-			{
-				for ( int i = 0; i < opponentMove.rowsCount; i++ )
-				{
-					for ( int j = 0; j < opponentMove.colsCount; j++ )
-						std::cout << (int)el->state.GetFieldState(j,i);
-					std::cout << "\n";
-				}
-				std::cout << "----------------------\n";
-			}
 			throw std::exception("Undefined move");			
 		}
 

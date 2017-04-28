@@ -8,6 +8,8 @@
 #include "../ReversiSI/MinMax.h"
 #include <sstream>
 
+#undef GetObject
+
 class FakeBoardState : public SI::Reversi::BoardState {
 public:
 	FakeBoardState(SI::Reversi::BoardState other) {
