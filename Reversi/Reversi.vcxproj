@@ -175,10 +175,15 @@
     <ClInclude Include="GameWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="BoardTexture.png" />
+    <Image Include="BoardTexture.png">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="Calibri.ttf" />
+    <Font Include="Calibri.ttf">
+      <DeploymentContent>true</DeploymentContent>
+    </Font>
     <ClInclude Include="GameBoardConverter.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SiPlayer.h" />
